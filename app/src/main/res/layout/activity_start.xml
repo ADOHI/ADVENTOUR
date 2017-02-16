@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_start"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.adohi.adventour.StartActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/colorPrimary">
+
+        <ImageView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/adventour_main"
+            android:id="@+id/iv_title"
+            android:layout_gravity="center"
+            android:layout_weight="2"/>
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:text="sign_out_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sign_out_button"
+            android:layout_weight="2" />
+
+        <Button
+            android:text="disconnect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/disconnect_button"
+            android:layout_weight="2" />
+    </LinearLayout>
+</RelativeLayout>

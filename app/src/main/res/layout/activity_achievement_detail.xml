@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_achievement_detail"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.adohi.adventour.AchievementDetailActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <android.support.design.widget.CoordinatorLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    app:srcCompat="@android:color/darker_gray"
+                    android:id="@+id/iv_detail_achievement"
+                />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_detail_title"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginBottom="40dp"
+                    android:layout_gravity="bottom|start"
+                    android:textSize="30sp"
+                    android:textColor="@android:color/background_light" />
+
+                <TextView
+                    android:text="점수"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView9"
+                    android:layout_margin="20dp"
+                    android:layout_gravity="bottom|start"
+                    android:textColor="@android:color/background_light" />
+            </android.support.design.widget.CoordinatorLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/trophy_off"
+                        android:id="@+id/iv_detail_trophy"
+                        android:layout_margin="10dp"/>
+
+                    <TextView
+                        android:text="미획득"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/bookmark_off"
+                        android:id="@+id/iv_detail_bookmark"
+                        android:layout_margin="10dp"/>
+
+                    <TextView
+                        android:text="북마크"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/indication"
+                        android:id="@+id/iv_detail_panel"
+                        android:layout_margin="10dp"/>
+
+                    <TextView
+                        android:text="m"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:id="@+id/tv_detail_distance" />
+                </LinearLayout>
+            </LinearLayout>
+            <View
+                android:layout_height="2dip"
+                android:layout_width="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"/>
+            <TextView
+                android:text="소개"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView2"
+                android:textStyle="bold"
+                android:layout_margin="10dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_detail_intro"
+                android:padding="10dp"/>
+            <View
+                android:layout_height="2dip"
+                android:layout_width="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/iv_detail_location"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_detail_location"
+                    android:layout_weight="9"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/iv_detail_phone_call"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_detail_phone_call"
+                    android:layout_weight="9"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                >
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/iv_detail_homepage"
+                    android:layout_weight="1"
+                   />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_detail_homepage"
+                    android:layout_weight="9"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

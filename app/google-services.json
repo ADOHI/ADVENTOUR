@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "793608077607",
+    "firebase_url": "https://adventour-9a03f.firebaseio.com",
+    "project_id": "adventour-9a03f",
+    "storage_bucket": "adventour-9a03f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:793608077607:android:ec4842cd47aac5be",
+        "android_client_info": {
+          "package_name": "com.example.adohi.adventour"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "793608077607-l031r60fkgk7uhb5sf8e8j2d2j82qtuk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.adohi.adventour",
+            "certificate_hash": "C2038B7AF22519EC5360FCF069542B347F0E59C8"
+          }
+        },
+        {
+          "client_id": "793608077607-1qmoasjf22a3r05rhk2msgqkbpcgbpdq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS1hl13DdD2wI-dSD6IUi4LEurkLxoE84"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "793608077607-1qmoasjf22a3r05rhk2msgqkbpcgbpdq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
