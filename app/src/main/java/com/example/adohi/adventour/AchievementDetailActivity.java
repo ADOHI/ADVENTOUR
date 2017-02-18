@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.example.adohi.adventour.db.User;
+import com.example.adohi.adventour.db.achieve;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,7 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.nhn.android.maps.maplib.NGeoPoint;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,11 +48,22 @@ public class AchievementDetailActivity extends AppCompatActivity {
     private Document doc = null;
     private RequestManager mGlideRequestManager;
     private DatabaseReference mDatabase;
-    private NGeoPoint bookmarkNGeoPoint;
-    private String bookmarkId;
+    private Location bookmarkLocation;
+    private String bookmarkContentId;
+    private String bookmarkContentTypeId;
+    private String bookmarkOverview;
+    private String bookmarkTitle;
+    private String bookmarkAddress;
+    private String bookmarkPhonecall;
+    private String bookmarkHomepage;
+    private String bookmarkImageUrl;
+    private double bookmarkDistance;
+    //private long bookmarkTime;
     private String uid;
     @BindView(R.id.iv_detail_achievement)ImageView detailAchievementImageView;
+    @BindView(R.id.iv_detail_trophy)ImageView detailTrophyImageView;
     @BindView(R.id.tv_detail_title)TextView detailTitleTextView;
+    @BindView(R.id.tv_detail_trophy)TextView detailTrophyTextView;
     @BindView(R.id.tv_detail_distance)TextView detailDistanceTextView;
     @BindView(R.id.iv_detail_bookmark)ImageView detailBookmarkImageView;
     @BindView(R.id.tv_detail_intro)TextView introTextView;
@@ -68,16 +81,19 @@ public class AchievementDetailActivity extends AppCompatActivity {
                   public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get user value
                       User user = dataSnapshot.getValue(User.class);
-                      Log.d("testttt", "" + user.bookmarkIdList.size());
-                      if(user.bookmarkIdList.contains(bookmarkId)){
+                      Log.d("testttt", "" + user.bookmarkList.size());
+                      achieve achieve = new achieve(bookmarkContentId, bookmarkContentTypeId, bookmarkOverview, bookmarkTitle,
+                              bookmarkAddress, bookmarkPhonecall, bookmarkHomepage, -1, bookmarkLocation.getLongitude(),
+                              bookmarkLocation.getLatitude(), bookmarkImageUrl, bookmarkDistance);
+                      if(user.checkBookmarkId(bookmarkContentId)){
                           detailBookmarkImageView.setImageResource(R.drawable.bookmark_off);
-                          user.bookmarkIdList.remove(bookmarkId);
-                          mDatabase.child("users").child(uid).child("bookmarkIdList").setValue(user.bookmarkIdList);
+                          user.removeBookmark(achieve.contentId);
+                          mDatabase.child("users").child(uid).child("bookmarkList").setValue(user.bookmarkList);
                       } else{
-                          if(user.bookmarkIdList.size() < 3){
+                          if(user.bookmarkList.size() < 3){
                               detailBookmarkImageView.setImageResource(R.drawable.bookmark_on);
-                              user.bookmarkIdList.add(bookmarkId);
-                              mDatabase.child("users").child(uid).child("bookmarkIdList").setValue(user.bookmarkIdList);
+                              user.bookmarkList.add(achieve);
+                              mDatabase.child("users").child(uid).child("bookmarkList").setValue(user.bookmarkList);
                           } else{
                               Toast.makeText(AchievementDetailActivity.this, "북마크 리스트가 가득 찼습니다",
                                       Toast.LENGTH_SHORT).show();
@@ -118,16 +134,26 @@ public class AchievementDetailActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mGlideRequestManager = Glide.with(this);
         Intent intent = getIntent();
-        bookmarkId = intent.getExtras().getString("contentid");
+        bookmarkContentId = intent.getExtras().getString("contentid");
+        bookmarkLocation = new Location(LocationManager.GPS_PROVIDER);
+        bookmarkLocation.setLongitude(intent.getExtras().getDouble("mapx"));
+        bookmarkLocation.setLatitude(intent.getExtras().getDouble("mapy"));
         mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get user value
                         User user = dataSnapshot.getValue(User.class);
-                        Log.d("testttt", "" + user.bookmarkIdList.size());
-                        if(user.bookmarkIdList.contains(bookmarkId)){
+                        achieve achieve = new achieve(bookmarkContentId, bookmarkContentTypeId, bookmarkOverview, bookmarkTitle,
+                                bookmarkAddress, bookmarkPhonecall, bookmarkHomepage, -1, bookmarkLocation.getLongitude(),
+                                bookmarkLocation.getLatitude(), bookmarkImageUrl, bookmarkDistance);
+
+                        if(user.checkBookmarkId(bookmarkContentId)){
                             detailBookmarkImageView.setImageResource(R.drawable.bookmark_on);
+                        }
+                        if(user.checkAchievementId(bookmarkContentId)){
+                            detailTrophyImageView.setImageResource(R.drawable.trophy_on);
+                            detailTrophyTextView.setText("획득");
                         }
                         // ...
                     }
@@ -137,7 +163,8 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
                     }
                 });
-        detailDistanceTextView.setText(intent.getExtras().getString("distance"));
+        bookmarkDistance = intent.getExtras().getDouble("distance");
+        detailDistanceTextView.setText((int)bookmarkDistance+"m");
         StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon");
         urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
         urlBuilder.append("&contentTypeId=");
@@ -152,12 +179,12 @@ public class AchievementDetailActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.d("whyyyyy", "dhoooo");
-                Intent activityStartIntent = new Intent(context, MainActivity.class);
-                activityStartIntent.putExtra("y", intent.getExtras().getDouble("y"));
-                activityStartIntent.putExtra("x", intent.getExtras().getDouble("x"));
-                context.startActivity(activityStartIntent);
-                overridePendingTransition(R.anim.push_left_in, R.anim.hold);
-                finish();
+                Location location = new Location(LocationManager.GPS_PROVIDER);
+                location.setLongitude(intent.getExtras().getDouble("mapx"));
+                location.setLatitude(intent.getExtras().getDouble("mapy"));
+                int distance = (int)location.distanceTo(bookmarkLocation);
+                detailDistanceTextView.setText(distance + "m");
+
             }
 
         };
@@ -190,19 +217,31 @@ public class AchievementDetailActivity extends AppCompatActivity {
             //data태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
             NodeList nodeList = doc.getElementsByTagName("item");
             //data 태그를 가지는 노드를 찾음, 계층적인 노드 구조를 반환
+            bookmarkContentTypeId = null;
+            bookmarkOverview = null;
+            bookmarkTitle = null;
+            bookmarkAddress = null;
+            bookmarkPhonecall = null;
+            bookmarkHomepage = null;
+            bookmarkImageUrl = null;
             for(int i = 0; i< nodeList.getLength(); i++){
 
                 Node node = nodeList.item(i); //data엘리먼트 노드
                 Element fstElmnt = (Element) node;
-
+                NodeList contentTypeId = fstElmnt.getElementsByTagName("contenttypeid");
+                bookmarkContentTypeId = contentTypeId.item(0).getChildNodes().item(0).getNodeValue();
                 NodeList title = fstElmnt.getElementsByTagName("title");
-                detailTitleTextView.setText(title.item(0).getChildNodes().item(0).getNodeValue());
+                bookmarkTitle = title.item(0).getChildNodes().item(0).getNodeValue();
+                detailTitleTextView.setText(bookmarkTitle);
+
                 NodeList overView = fstElmnt.getElementsByTagName("overview");
-                introTextView.setText((overView.item(0).getChildNodes().item(0).getNodeValue().replaceAll("<br>", "").replaceAll("<br />", "\n")));
+                bookmarkOverview = (overView.item(0).getChildNodes().item(0).getNodeValue().replaceAll("<br>", "").replaceAll("<br />", "\n"));
+                introTextView.setText(bookmarkOverview);
 
                 try {
                     NodeList address = fstElmnt.getElementsByTagName("addr1");
-                    detailLocationTextView.setText(address.item(0).getChildNodes().item(0).getNodeValue());
+                    bookmarkAddress = address.item(0).getChildNodes().item(0).getNodeValue();
+                    detailLocationTextView.setText(bookmarkAddress);
                     detailLocationImageView.setImageResource(R.drawable.location);
                 } catch (Exception ex){
                     detailLocationTextView.setHeight(0);
@@ -210,7 +249,8 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
                 try {
                     NodeList tel = fstElmnt.getElementsByTagName("tel");
-                    detailPhoneCallTextView.setText(tel.item(0).getChildNodes().item(0).getNodeValue());
+                    bookmarkPhonecall = tel.item(0).getChildNodes().item(0).getNodeValue();
+                    detailPhoneCallTextView.setText(bookmarkPhonecall);
                     detailPhoneCallImageView.setImageResource(R.drawable.phone_call);
                 } catch (Exception ex){
                     detailPhoneCallTextView.setHeight(0);
@@ -224,6 +264,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
                     if(matcher.find()) {
                         homepageString = matcher.group(1);
                     }
+                    bookmarkHomepage = homepageString;
                     detailHomepageTextView.setText(homepageString);
                     detailHomepageImageView.setImageResource(R.drawable.homepage);
                 } catch (Exception ex){
@@ -232,7 +273,8 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
                 try{
                     NodeList sumnail = fstElmnt.getElementsByTagName("firstimage");
-                    mGlideRequestManager.load(sumnail.item(0).getChildNodes().item(0).getNodeValue()).into(detailAchievementImageView);
+                    bookmarkImageUrl = sumnail.item(0).getChildNodes().item(0).getNodeValue();
+                    mGlideRequestManager.load(bookmarkImageUrl).into(detailAchievementImageView);
                     //holder.mainRowImageView.set
                 }catch (Exception ex){
 

@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.adohi.adventour.MainActivity"
-    android:orientation="vertical">
+
+    tools:context="com.example.adohi.adventour.MainActivity">
+    <android.support.v4.view.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/pager">
+
+    </android.support.v4.view.ViewPager>
 
 
     <LinearLayout
@@ -14,108 +20,53 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.Toolbar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:theme="?attr/actionBarTheme"
-            android:minHeight="?attr/actionBarSize"
-            android:id="@+id/toolbar2" />
-
-        <android.support.design.widget.TabLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/tl_tablayout"
-            >
-
-            <android.support.design.widget.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/map"
-                android:id="@+id/ti_map"/>
-
-            <android.support.design.widget.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:icon="@drawable/bookmark_on"
-                android:id="@+id/ti_bookmark"/>
-        </android.support.design.widget.TabLayout>
-
-        <android.support.design.widget.CoordinatorLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
-            >
-
-            <com.nhn.android.maps.NMapView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/mapView" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:id="@+id/bt_refresh"
-                android:layout_gravity="top|end"
-                app:backgroundTint="@android:color/white"
-                app:srcCompat="@drawable/reload"
-                android:layout_margin="15dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:id="@+id/bt_tracker"
-                android:layout_gravity="top|start"
-                app:backgroundTint="@android:color/white"
-                app:srcCompat="@drawable/tracker"
-                android:layout_margin="15dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:id="@+id/bt_search"
-                app:srcCompat="@drawable/loupe"
-                android:layout_margin="15dp"
-                android:layout_gravity="bottom|end"
-                app:backgroundTint="@android:color/white" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:text="Name"
-                android:textColor="@color/colorAccent"
-                android:ems="10"
-                android:id="@+id/et_searchwindow"
-                android:layout_gravity="bottom|center_vertical"
-                android:layout_margin="15dp"/>
-
-        </android.support.design.widget.CoordinatorLayout>
-
-
-        <android.support.design.widget.CoordinatorLayout
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
-            <android.support.v7.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/rv_achievement"
-                />
-            <android.support.v7.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/rv_bookmark_achievement"
-                android:visibility="gone"
-                />
 
-        </android.support.design.widget.CoordinatorLayout>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/resume_main"
+                android:id="@+id/iv_main_resume"
+                android:layout_weight="1"
+                android:padding="40dp"/>
 
-
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/trophy_main"
+                android:id="@+id/iv_main_trophy"
+                android:padding="40dp"
+                android:layout_weight="1" />
 
         </LinearLayout>
 
-</LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/quest_main"
+                android:id="@+id/iv_main_quest"
+
+                android:layout_weight="1"
+                android:padding="40dp"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/friend_main"
+                android:id="@+id/iv_main_friend"
+                android:layout_weight="1"
+                android:padding="40dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</android.support.design.widget.CoordinatorLayout>

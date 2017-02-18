@@ -2,6 +2,7 @@ package com.example.adohi.adventour;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
+import com.example.adohi.adventour.db.achieve;
+import com.google.android.gms.maps.model.LatLng;
 import com.nhn.android.maps.maplib.NGeoPoint;
 
 import java.util.ArrayList;
@@ -19,26 +22,12 @@ import java.util.ArrayList;
  */
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    private ArrayList<String> mTitleDataset;
-    private ArrayList<String> mSumnailDataset;
-    private ArrayList<String> mAddressDataset;
-    private ArrayList<String> mDistanceDataset;
-    private ArrayList<String> mContentIdDataset;
-    private ArrayList<String> mContentTypeIdDataset;
-    private ArrayList<NGeoPoint> mNGeoPointDataset;
+    private ArrayList<achieve> mAchieveDataset;
     private RequestManager mRequestManager;
-    private static MainActivity activity;
-    public MyAdapter(MainActivity activity, ArrayList<String> myTitleDataset, ArrayList<String> mySumnailDataset,
-                     ArrayList<String> myAddressDataset, ArrayList<String> myDistanceDataset, ArrayList<String> myContentIdDataset,
-                     ArrayList<String> myContentTypeIdDataset, ArrayList<NGeoPoint> myNGeoPointDataset, RequestManager requestManager) {
+    private static MapsActivity activity;
+    public MyAdapter(MapsActivity activity, ArrayList<achieve> myAchieveDataset , RequestManager requestManager) {
         this.activity = activity;
-        mTitleDataset = myTitleDataset;
-        mSumnailDataset = mySumnailDataset;
-        mAddressDataset = myAddressDataset;
-        mDistanceDataset = myDistanceDataset;
-        mContentIdDataset = myContentIdDataset;
-        mContentTypeIdDataset = myContentTypeIdDataset;
-        mNGeoPointDataset = myNGeoPointDataset;
+        mAchieveDataset = myAchieveDataset;
         mRequestManager = requestManager;
     }
 
@@ -47,7 +36,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     // you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
         // each data item is just a string in this case
-        private final Context context;
         public TextView achievementTitleTextView;
         public TextView achievementAddressTextView;
         public TextView achievementDistanceTextView;
@@ -55,13 +43,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         public ImageView bookMarkRowImageView;
         public String contentId;
         public String contentTypeId;
-        public String distance;
-        public NGeoPoint nGeoPoint;
+        public double distance;
+        public double mapX;
+        public double mapY;
 
 
         public ViewHolder(View v) {
             super(v);
-            context = v.getContext();
             achievementTitleTextView = (TextView) v.findViewById(R.id.tv_achievement_title);
             achievementAddressTextView = (TextView) v.findViewById(R.id.tv_achievement_address);
             achievementDistanceTextView = (TextView) v.findViewById(R.id.tv_achievement_distance);
@@ -78,7 +66,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             intent.putExtra("contentid", contentId);
             intent.putExtra("contenttypeid", contentTypeId);
             intent.putExtra("distance", distance);
-            intent.putExtra("ngeopoint", nGeoPoint);
+            intent.putExtra("mapx", mapX);
+            intent.putExtra("mapy", mapY);
             activity.startActivity(intent);
 
         }
@@ -104,25 +93,27 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.achievementTitleTextView.setText(mTitleDataset.get(position));
+        holder.achievementTitleTextView.setText(mAchieveDataset.get(position).title);
         holder.achievementSumnailImageView.setImageResource(R.drawable.btn_green_pressed);
-        holder.achievementAddressTextView.setText(mAddressDataset.get(position));
-        holder.achievementDistanceTextView.setText(mDistanceDataset.get(position));
+        holder.achievementAddressTextView.setText(mAchieveDataset.get(position).address);
+        holder.achievementDistanceTextView.setText(Integer.toString((int)mAchieveDataset.get(position).distance)+"m");
         try{
-            mRequestManager.load(mSumnailDataset.get(position)).into(holder.achievementSumnailImageView);
+            mRequestManager.load(mAchieveDataset.get(position).imageUrl).into(holder.achievementSumnailImageView);
             //holder.mainRowImageView.set
         }catch (Exception ex){
 
         }
-        holder.contentId = mContentIdDataset.get(position);
-        holder.contentTypeId = mContentTypeIdDataset.get(position);
-        holder.distance = mDistanceDataset.get(position);
-        holder.nGeoPoint = mNGeoPointDataset.get(position);
+        holder.contentId = mAchieveDataset.get(position).contentId;
+        holder.contentTypeId = mAchieveDataset.get(position).contentTypeId;
+        holder.distance = mAchieveDataset.get(position).distance;
+        holder.mapX = mAchieveDataset.get(position).lng;
+        holder.mapY = mAchieveDataset.get(position).lat;
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mTitleDataset.size();
+        return mAchieveDataset.size();
     }
 }

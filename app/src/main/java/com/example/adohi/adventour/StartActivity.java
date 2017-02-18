@@ -1,6 +1,7 @@
 package com.example.adohi.adventour;
 
 import android.*;
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -44,9 +45,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.nhn.android.maps.NMapActivity;
 import com.nhn.android.maps.NMapLocationManager;
 import com.nhn.android.maps.maplib.NGeoPoint;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -69,7 +74,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
     private DatabaseReference mDatabase;
     @BindView(R.id.iv_title)ImageView titleImageView;
     @OnClick(R.id.iv_title)void click() {
-        Intent intent = new Intent(this, FirstActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.push_left_in, R.anim.hold);
         finish();
@@ -83,9 +88,29 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         ButterKnife.bind(this);
-        mMapLocationManager = new NMapLocationManager(this);
-        mMapLocationManager.setOnLocationChangeListener(onMyLocationChangeListener);
-        mMapLocationManager.enableMyLocation(true);
+
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                Toast.makeText(StartActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Toast.makeText(StartActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+            }
+
+
+        };
+
+        new TedPermission(this)
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+                .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET
+                , Manifest.permission.CAMERA, Manifest.permission.ACCESS_WIFI_STATE,
+                        Manifest.permission.CHANGE_WIFI_STATE)
+                .check();
+
         findViewById(R.id.sign_in_button).setOnClickListener(this);
 
         findViewById(R.id.sign_out_button).setOnClickListener(this);
@@ -104,13 +129,21 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
                           User newUser = new User(user.getDisplayName());
                           mDatabase.child("users").child(user.getUid()).setValue(newUser);
-                          /*IntentFilter intentFilter = new IntentFilter();
+                          Intent intent = new Intent(getApplicationContext(), LocationService.class);
+                          startService(intent);
+                          IntentFilter intentFilter = new IntentFilter();
                           intentFilter.addAction("loaction");
-                          BroadcastReceiver receiver = new BroadcastReceiver() {
+                          Intent activityStartIntent = new Intent(getApplicationContext(), MainActivity.class);
+                          activityStartIntent.putExtra("y", 37);
+                          activityStartIntent.putExtra("x", 121);
+                          startActivity(activityStartIntent);
+                          overridePendingTransition(R.anim.push_left_in, R.anim.hold);
+                          finish();
+                          /*BroadcastReceiver receiver = new BroadcastReceiver() {
                               @Override
                               public void onReceive(Context context, Intent intent) {
                                   Log.d("whyyyyy", "dhoooo");
-                                  Intent activityStartIntent = new Intent(context, MainActivity.class);
+                                  Intent activityStartIntent = new Intent(context, MapsActivity.class);
                                   activityStartIntent.putExtra("y", intent.getExtras().getDouble("y"));
                                   activityStartIntent.putExtra("x", intent.getExtras().getDouble("x"));
                                   context.startActivity(activityStartIntent);
@@ -119,6 +152,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                               }
 
                           };
+
                           registerReceiver(receiver,intentFilter);*/
                           } else {
                             // User is signed out
@@ -138,10 +172,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
             .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
             .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
             .build();
-
-        Intent intent = new Intent(this, LocationService.class);
-        startService(intent);
-
 
 
     }
@@ -453,37 +483,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                 });
     }
 
-    private final NMapLocationManager.OnLocationChangeListener onMyLocationChangeListener = new NMapLocationManager.OnLocationChangeListener() {
 
-        @Override
-        public boolean onLocationChanged(NMapLocationManager locationManager, NGeoPoint myLocation) {
-            Log.d("aaasss", "add");
-            Intent activityStartIntent = new Intent(getApplicationContext(), MainActivity.class);
-            activityStartIntent.putExtra("y", myLocation.getLatitude());
-            activityStartIntent.putExtra("x", myLocation.getLongitude());
-            startActivity(activityStartIntent);
-            overridePendingTransition(R.anim.push_left_in, R.anim.hold);
-            //finish();
-            return true;
-        }
 
-        @Override
-        public void onLocationUpdateTimeout(NMapLocationManager locationManager) {
-
-            // stop location updating
-            //			Runnable runnable = new Runnable() {
-            //				public void run() {
-            //					stopMyLocation();
-            //				}
-            //			};
-            //			runnable.run();
-
-        }
-
-        @Override
-        public void onLocationUnavailableArea(NMapLocationManager locationManager, NGeoPoint myLocation) {
-
-        }
-
-    };
 }
+

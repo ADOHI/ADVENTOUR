@@ -9,18 +9,20 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+
 public class DemoParallaxFragment extends Fragment {
 
     private DemoParallaxAdapter mCatsAdapter;
-
+    private RequestManager mGlideRequestManager;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         super.onCreateView(inflater, container, savedInstanceState);
-
+        mGlideRequestManager = Glide.with(this);
         View v = inflater.inflate(R.layout.demo_fragment_parallax, container, false);
         final ImageView image = (ImageView) v.findViewById(R.id.image);
-
         image.setImageResource(getArguments().getInt("image"));
         image.post(new Runnable() {
             @Override
@@ -47,6 +49,7 @@ public class DemoParallaxFragment extends Fragment {
 
                 matrix.preTranslate((wv - width) / 2, (hv - height) / 2);
                 image.setScaleType(ImageView.ScaleType.MATRIX);
+                //mGlideRequestManager.load(matrix).into(image);
                 image.setImageMatrix(matrix);
             }
         });
