@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.adohi.adventour.AchievementDetailActivity">
+    tools:context="com.adostudio.adohi.adventour.AchievementDetailActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -26,6 +26,7 @@
                     android:layout_height="250dp"
                     app:srcCompat="@android:color/darker_gray"
                     android:id="@+id/iv_detail_achievement"
+                    android:scaleType="centerCrop"
                 />
 
                 <TextView
@@ -38,16 +39,53 @@
                     android:textSize="30sp"
                     android:textColor="@android:color/background_light" />
 
-                <TextView
-                    android:text="점수"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView9"
-                    android:layout_margin="20dp"
-                    android:layout_gravity="bottom|start"
-                    android:textColor="@android:color/background_light" />
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="150dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="top|end">
+
+                    <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/flag_big"
+                        android:id="@+id/imageView4"
+                        android:layout_weight="1" />
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            app:srcCompat="@drawable/resume_main"
+                            android:id="@+id/iv_conquest_sumanil"
+                            android:layout_weight="3"
+                            android:layout_margin="10dp"
+                             />
+
+                        <TextView
+                            android:text="없음"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:id="@+id/tv_conquest_name"
+                            android:layout_weight="1"
+                            android:textAlignment="center"
+                            android:textColor="#DFFFFFFF"
+                            android:textSize="20sp"/>
+                    </LinearLayout>
+                </LinearLayout>
             </android.support.design.widget.CoordinatorLayout>
 
+            <View
+                android:layout_height="2dip"
+                android:layout_width="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"/>
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -205,6 +243,12 @@
                     android:layout_weight="9"
                     android:layout_gravity="center_vertical"/>
             </LinearLayout>
+            <View
+                android:layout_height="2dip"
+                android:layout_width="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"/>
 
         </LinearLayout>
     </ScrollView>

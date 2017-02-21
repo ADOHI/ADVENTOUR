@@ -1,4 +1,4 @@
-package com.example.rubberindicator;
+package com.adostudio.rubberindicator;
 
 import org.junit.Test;
 

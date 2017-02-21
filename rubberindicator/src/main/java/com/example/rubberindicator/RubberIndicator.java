@@ -1,4 +1,4 @@
-package com.example.rubberindicator;
+package com.adostudio.rubberindicator;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;

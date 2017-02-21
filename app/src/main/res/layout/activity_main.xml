@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context="com.example.adohi.adventour.MainActivity">
+    tools:context="com.adostudio.adohi.adventour.MainActivity">
+
     <android.support.v4.view.ViewPager
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,59 +15,209 @@
 
     </android.support.v4.view.ViewPager>
 
-
-    <LinearLayout
-        android:orientation="vertical"
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="match_parent"
+            android:orientation="horizontal" >
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/resume_main"
-                android:id="@+id/iv_main_resume"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:padding="40dp"/>
+                android:id="@+id/ll_main_first"
+                android:visibility="invisible">
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/trophy_main"
-                android:id="@+id/iv_main_trophy"
-                android:padding="40dp"
-                android:layout_weight="1" />
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:srcCompat="@drawable/resume_main"
+                    android:id="@+id/iv_main_resume"
+                    android:layout_weight="4"
+                    android:padding="40dp"
+                    android:layout_gravity="bottom"
+                    android:alpha="0.5"/>
+
+                <TextView
+                    android:text="프로필"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_profile_big"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="40sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:text="당신의 프로필을 확인하세요"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_profile_small"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="italic"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/ll_main_second"
+                android:layout_gravity="bottom"
+                android:gravity="center"
+                android:visibility="invisible">
+
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:srcCompat="@drawable/trophy_main"
+                    android:id="@+id/iv_main_trophy"
+                    android:padding="40dp"
+                    android:layout_weight="4"
+                    android:alpha="0.5"/>
+
+                <TextView
+                    android:text="업적"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_trophy_big"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="40sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:text="모험을 떠나세요"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_trophy_small"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="italic"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/ll_main_third"
+                android:layout_gravity="bottom"
+                android:gravity="center"
+                android:visibility="invisible">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:srcCompat="@drawable/quest_main"
+                    android:id="@+id/iv_main_quest"
+                    android:layout_weight="4"
+                    android:padding="40dp"
+                    android:layout_gravity="bottom"
+                    android:gravity="center"
+                    android:alpha="0.5"/>
+
+                <TextView
+                    android:text="퀘스트"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_quest_big"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="40sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:text="퀘스트를 주고 받으세요"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_quest_small"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="italic"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/ll_main_fourth"
+                android:visibility="invisible">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:srcCompat="@drawable/friend_main"
+                    android:id="@+id/iv_main_friend"
+                    android:layout_weight="4"
+                    android:padding="40dp"
+                    android:layout_gravity="bottom"
+                    android:gravity="center"
+                    android:alpha="0.5" />
+
+                <TextView
+                    android:text="친구"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_friend_big"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="40sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:text="친구와 경쟁하세요"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_main_friend_small"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="italic"/>
+            </LinearLayout>
 
         </LinearLayout>
+    </HorizontalScrollView>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            >
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/logout"
+        android:scaleType="centerInside"
+        android:id="@+id/fb_main_logout"
+        android:layout_gravity="start|bottom"
+        app:backgroundTint="@android:color/white"/>
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/quest_main"
-                android:id="@+id/iv_main_quest"
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/menu"
+        android:scaleType="center"
+        android:id="@+id/fb_main_menu"
+        android:layout_gravity="bottom|end"
+        app:backgroundTint="@android:color/white"/>
 
-                android:layout_weight="1"
-                android:padding="40dp"/>
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/friend_main"
-                android:id="@+id/iv_main_friend"
-                android:layout_weight="1"
-                android:padding="40dp"/>
-        </LinearLayout>
-    </LinearLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srcCompat="@color/colorPrimaryDark"
+        android:id="@+id/iv_ani"
+        android:alpha="0"/>
+
 </android.support.design.widget.CoordinatorLayout>

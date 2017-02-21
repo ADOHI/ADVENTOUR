@@ -1,35 +1,35 @@
 {
   "project_info": {
-    "project_number": "793608077607",
-    "firebase_url": "https://adventour-9a03f.firebaseio.com",
-    "project_id": "adventour-9a03f",
-    "storage_bucket": "adventour-9a03f.appspot.com"
+    "project_number": "285891735463",
+    "firebase_url": "https://adventour-a24a8.firebaseio.com",
+    "project_id": "adventour-a24a8",
+    "storage_bucket": "adventour-a24a8.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:793608077607:android:ec4842cd47aac5be",
+        "mobilesdk_app_id": "1:285891735463:android:fce241174b5490ac",
         "android_client_info": {
-          "package_name": "com.example.adohi.adventour"
+          "package_name": "com.adostudio.adohi.adventour"
         }
       },
       "oauth_client": [
         {
-          "client_id": "793608077607-l031r60fkgk7uhb5sf8e8j2d2j82qtuk.apps.googleusercontent.com",
+          "client_id": "285891735463-u2ueitcfegu6i4fgl4ehfp4ea291obh9.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.adohi.adventour",
+            "package_name": "com.adostudio.adohi.adventour",
             "certificate_hash": "C2038B7AF22519EC5360FCF069542B347F0E59C8"
           }
         },
         {
-          "client_id": "793608077607-1qmoasjf22a3r05rhk2msgqkbpcgbpdq.apps.googleusercontent.com",
+          "client_id": "285891735463-9kd3o41eiibe10bu4c0qh5tqrhajupd1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCS1hl13DdD2wI-dSD6IUi4LEurkLxoE84"
+          "current_key": "AIzaSyBZJk7AtiwJtIBMdE04eD-4S31ya8_2d1Y"
         }
       ],
       "services": {
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "793608077607-1qmoasjf22a3r05rhk2msgqkbpcgbpdq.apps.googleusercontent.com",
+              "client_id": "285891735463-9kd3o41eiibe10bu4c0qh5tqrhajupd1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

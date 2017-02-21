@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="70dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/io">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorBackgroundFloating">
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                app:srcCompat="@android:drawable/presence_busy"
+                android:id="@+id/iv_friend_sumnail"
+                android:layout_weight="1"
+                android:scaleType="fitXY"
+                android:padding="5dp"/>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:text="name"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_friend_name"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"/>
+
+                <TextView
+                    android:text="score"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_friend_score"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:text="my home"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:id="@+id/tv_friend_lately"
+                    android:layout_weight="1"
+                    android:singleLine="true"/>
+            </LinearLayout>
+
+            <TextView
+                android:text="TextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:id="@+id/tv_friend_memo"
+                android:layout_weight="1"
+                android:gravity="center_vertical"/>
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

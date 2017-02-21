@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_memo_modify"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.adostudio.adohi.adventour.MemoModifyActivity">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:hint="메모를 입력하세요"
+        android:ems="101"
+        android:id="@+id/et_save_memo" />
+
+    <Button
+        android:text="저장"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bt_save_memo"
+        android:background="@color/colorPrimary"
+        android:textColor="#FFFFFFFF"/>
+</LinearLayout>

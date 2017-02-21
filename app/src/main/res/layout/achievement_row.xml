@@ -13,7 +13,7 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="?attr/colorBackgroundFloating">
 
             <ImageView
@@ -30,66 +30,50 @@
                 android:orientation="vertical"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="2.5">
+                android:layout_weight="2.2"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp">
 
-                <LinearLayout
-                    android:orientation="horizontal"
+
+                <TextView
+                    android:text="TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:textSize="20dp"
+                    android:id="@+id/tv_achievement_title"
+                    android:singleLine="true"
+                    android:layout_weight="1"/>
+
+                <View
+                    android:layout_height="2dip"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1">
+                    android:background="@color/colorPrimaryDark"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"/>
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_menu_manage"
-                        android:id="@+id/iv_achievement_icon" />
+                <TextView
+                    android:text="TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_achievement_address"
+                    android:singleLine="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_weight="1"/>
 
-                    <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:textSize="20dp"
-                        android:id="@+id/tv_achievement_title"
-                        android:singleLine="true"/>
-                </LinearLayout>
+                <TextView
+                    android:text="TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_achievement_distance"
+                    android:layout_weight="1"
+                    android:layout_gravity="end"
+                    android:layout_marginRight="20dp"/>
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tv_achievement_address"
-                        android:singleLine="true" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tv_achievement_distance"
-                        android:layout_weight="1" />
-                </LinearLayout>
 
             </LinearLayout>
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                app:srcCompat="@android:drawable/btn_star_big_off"
-                android:id="@+id/iv_rowBookMark"
-                android:layout_weight="0.5"/>
+
         </LinearLayout>
     </LinearLayout>
 
