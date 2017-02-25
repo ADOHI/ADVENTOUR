@@ -10,10 +10,11 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:inputType="textMultiLine"
         android:hint="메모를 입력하세요"
         android:ems="101"
-        android:id="@+id/et_save_memo" />
+        android:id="@+id/et_save_memo"
+        android:layout_margin="20dp"/>
 
     <Button
         android:text="저장"
@@ -21,5 +22,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/bt_save_memo"
         android:background="@color/colorPrimary"
-        android:textColor="#FFFFFFFF"/>
+        android:textColor="#FFFFFFFF"
+        android:layout_margin="20dp"/>
 </LinearLayout>

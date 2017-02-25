@@ -25,27 +25,31 @@
             android:id="@+id/sign_in_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center">
 
-        <Button
-            android:text="Button"
+        </com.google.android.gms.common.SignInButton>
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/bt_start"
-            android:layout_weight="2" />
+            android:layout_marginBottom="20dp">
 
-        <Button
-            android:text="sign_out_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/sign_out_button"
-            android:layout_weight="2" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/login_button"
+                android:id="@+id/iv_login"
+                android:layout_weight="1" />
 
-        <Button
-            android:text="disconnect_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/disconnect_button"
-            android:layout_weight="2" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/logout_button"
+                android:id="@+id/iv_logout"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+
     </LinearLayout>
 </RelativeLayout>

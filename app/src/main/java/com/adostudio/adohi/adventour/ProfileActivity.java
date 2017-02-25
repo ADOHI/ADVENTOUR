@@ -1,24 +1,21 @@
 package com.adostudio.adohi.adventour;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.adostudio.adohi.adventour.db.Achievement;
-import com.adostudio.adohi.adventour.db.Sticker;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -44,9 +41,11 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private ArrayList<Achievement> latelyAchievementList;
+    @BindView(R.id.sv_profile)ScrollView profileScrollView;
     @BindView(R.id.rv_profile_achievement)RecyclerView mRecyclerView;
     @BindView(R.id.tv_profile_name)TextView profileNameTextView;
     @BindView(R.id.iv_profile_picture)ImageView profilePictureImageView;
+    @BindView(R.id.iv_profile_trophy)ImageView profileTrophyImageView;
     @BindView(R.id.iv_profile_flag)ImageView profileFlagImageView;
     @BindView(R.id.iv_profile_last)ImageView profileLastImageView;
     @BindView(R.id.tv_profile_memo)TextView profileMemoTextView;
@@ -55,6 +54,12 @@ public class ProfileActivity extends AppCompatActivity {
     @BindView(R.id.tv_profile_flag)TextView profileFlagTextView;
     @OnClick(R.id.iv_profile_flag)void profileFlagClick() {
         Intent intent = new Intent(this, FlagActivity.class);
+        intent.putExtra("trophy_button", false);
+        startActivity(intent);
+    }
+    @OnClick(R.id.iv_profile_trophy)void profileTrophyClick() {
+        Intent intent = new Intent(this, FlagActivity.class);
+        intent.putExtra("trophy_button", true);
         startActivity(intent);
     }
     @BindView(R.id.ll_profile_memo)LinearLayout profileMemoLinearLayout;
@@ -132,6 +137,7 @@ public class ProfileActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get user value
+                        latelyAchievementList.clear();
                         User user = dataSnapshot.getValue(User.class);
                         profileNameTextView.setText(user.userName);
                         mGlideRequestManager.load(user.photoUrl).into(profilePictureImageView);
@@ -144,11 +150,12 @@ public class ProfileActivity extends AppCompatActivity {
                             memo = user.memo;
                             profileMemoTextView.setText(memo);
                         }
-                        profileScoreTextView.setText(user.score + "");
-                        profileFlagTextView.setText(user.flag + "");
+                        profileScoreTextView.setText(user.achievementList.size() + "");
+                        profileFlagTextView.setText(user.flagList.size() + "");
 
                         latelyAchievementList.addAll(user.achievementList);
                         mAdapter.notifyDataSetChanged();
+                        profileScrollView.scrollTo(0,0);
                     }
 
                     @Override
@@ -164,6 +171,7 @@ public class ProfileActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new AchievementAdapter(this, latelyAchievementList, mGlideRequestManager);
         mRecyclerView.setAdapter(mAdapter);
-
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        profileScrollView.scrollTo(0,0);
     }
 }

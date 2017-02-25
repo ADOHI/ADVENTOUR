@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_review"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.adostudio.adohi.adventour.ReviewActivity">
+
+    <TextView
+        android:text="평가하려면 별표를 탭 하세요"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5"
+        android:gravity="center"
+        android:layout_marginTop="20dp"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/star_fill"
+            android:id="@+id/iv_review_star1"
+            android:layout_weight="1" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/star_fill"
+            android:id="@+id/iv_review_star2"
+            android:layout_weight="1" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/star_fill"
+            android:id="@+id/iv_review_star3"
+            android:layout_weight="1" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/star"
+            android:id="@+id/iv_review_star4"
+            android:layout_weight="1" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/star"
+            android:id="@+id/iv_review_star5"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <TextView
+        android:text="별점 3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_review_score"
+        android:gravity="center"
+        android:textSize="20dp"/>
+
+    <View
+        android:layout_height="2dip"
+        android:layout_width="match_parent"
+        android:background="@color/colorPrimaryDark"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:hint="평가를 입력하세요"
+        android:ems="150"
+        android:id="@+id/et_review"
+        android:layout_margin="20dp"/>
+
+    <Button
+        android:text="등록"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bt_save_review"
+        android:layout_margin="20dp"
+        android:textColor="#FFFFFFFF"
+        android:background="@color/colorPrimary"
+        android:textSize="20dp"
+        android:shadowColor="@color/colorAccent"/>
+</LinearLayout>

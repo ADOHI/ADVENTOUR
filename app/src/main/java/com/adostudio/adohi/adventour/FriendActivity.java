@@ -1,5 +1,6 @@
 package com.adostudio.adohi.adventour;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
@@ -34,8 +36,15 @@ import butterknife.ButterKnife;
 public class FriendActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener{
     private DatabaseReference mDatabase;
     private String uid;
-
+    private int userTrophy;
+    private int userFlag;
+    private int trophyRanking;
+    private int flagRanking;
+    private int trophySame;
+    private int flagSame;
     private RequestManager mGlideRequestManager;
+    private boolean issueCheck;
+
 
     private ArrayList<User> userArrayList;
     private ArrayList<User> friendArrayList;
@@ -48,6 +57,8 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
     @BindView(R.id.rv_friend_add)RecyclerView mRecyclerView;
     @BindView(R.id.rv_friend_list)RecyclerView friendRecyclerView;
     @BindView(R.id.ll_friend_list)LinearLayout friendLinearLayout;
+    @BindView(R.id.tv_trophy_ranking)TextView trophyRankingTextView;
+    @BindView(R.id.tv_flag_ranking)TextView flagRankingTextView;
     private TabLayout friendTabLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +77,8 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
                         friendList.clear();
                         User user = dataSnapshot.getValue(User.class);
                         friendList.addAll(user.friendList);
+                        userTrophy = user.achievementList.size();
+                        userFlag = user.flagList.size();
                     }
 
                     @Override
@@ -80,16 +93,38 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         userArrayList.clear();
                         friendArrayList.clear();
+                        trophyRanking = 1;
+                        flagRanking = 1;
+                        trophySame = 1;
+                        flagSame = 1;
                         Iterator<DataSnapshot> iter = dataSnapshot.getChildren().iterator();
                         while(iter.hasNext()){
                             User user =  iter.next().getValue(User.class);
                             if(!user.uid.equals(uid)) {
-                                if (friendList.contains(user.uid)) friendArrayList.add(user);
+                                if (friendList.contains(user.uid)) {
+                                    friendArrayList.add(user);
+                                    if(userTrophy < user.achievementList.size()) {
+                                        trophyRanking += trophySame;
+                                        trophySame = 1;
+                                    } else if (userTrophy == user.achievementList.size()) {
+                                        trophySame += 1;
+                                    }
+
+                                    if(userFlag < user.flagList.size()) {
+                                        flagRanking += flagSame;
+                                        flagSame = 1;
+                                    } else if (userTrophy == user.achievementList.size()) {
+                                        flagSame += 1;
+                                    }
+                                }
                                 else userArrayList.add(user);
                             }
                         }
                         mAdapter.notifyDataSetChanged();
                         friendAdapter.notifyDataSetChanged();
+                        trophyRankingTextView.setText(trophyRanking+"등");
+                        flagRankingTextView.setText(flagRanking+"등");
+
                     }
 
                     @Override
@@ -118,6 +153,16 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
 
         friendTabLayout = (TabLayout) findViewById(R.id.friend_tablayout);
         friendTabLayout.addOnTabSelectedListener(this);
+
+        Intent intent = getIntent();
+        issueCheck = intent.getExtras().getBoolean("issue");
+        if(issueCheck){
+            mRecyclerView.setVisibility(View.GONE);
+            friendLinearLayout.setVisibility(View.VISIBLE);
+            friendTabLayout.setVisibility(View.GONE);
+            Log.d("issue", issueCheck + "");
+        }
+
     }
 
     @Override
@@ -140,5 +185,9 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+    }
+
+    public boolean getIssueCheck(){
+        return issueCheck;
     }
 }

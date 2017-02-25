@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application
         android:name=".appInit.MyApplication"
         android:allowBackup="true"
@@ -38,6 +41,7 @@
             android:label="@string/title_activity_maps" />
         <activity
             android:name=".GetAchivementActivity"
+            android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar" />
         <!--
  ATTENTION: This was auto-generated to add Google Play services to your project for
@@ -49,16 +53,26 @@
 
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ProfileActivity" />
         <activity
             android:name=".FlagActivity"
             android:label="@string/title_activity_flag" />
         <activity android:name=".userdefinedtargets.UserDefinedTargets" />
         <activity android:name=".QuestActivity" />
-        <activity android:name=".TestActivity" />
         <activity android:name=".FriendActivity" />
-        <activity android:name=".MemoModifyActivity"></activity>
+        <activity android:name=".MemoModifyActivity" />
+        <activity android:name=".CaptureTestActivity" />
+        <activity android:name=".ReviewActivity" />
+        <activity android:name=".QuestIssueActivity" />
+        <activity android:name=".IssueLocationActivity" />
+        <activity android:name=".QuestListActivity" />
+        <activity
+            android:name=".GetStickerActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleInstance">
+
+        </activity>
     </application>
 
 </manifest>

@@ -161,7 +161,7 @@ public class SampleAppRenderer {
         else
             GLES20.glFrontFace(GLES20.GL_CCW);   // Back camera
 
-        // We get a list of views which depend on the mode we are working on, for mono we have
+        // We get_button a list of views which depend on the mode we are working on, for mono we have
         // only one view, in stereo we have three: left, right and postprocess
         ViewList viewList = mRenderingPrimitives.getRenderingViews();
 
@@ -224,7 +224,7 @@ public class SampleAppRenderer {
             return;
 
         int vbVideoTextureUnit = 0;
-        // Bind the video bg texture and get the Texture ID from Vuforia
+        // Bind the video bg texture and get_button the Texture ID from Vuforia
         videoBackgroundTex.setTextureUnit(vbVideoTextureUnit);
         if (!mRenderer.updateVideoBackgroundTexture(videoBackgroundTex))
         {

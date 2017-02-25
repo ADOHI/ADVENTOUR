@@ -41,7 +41,7 @@
                     android:layout_weight="4"
                     android:padding="40dp"
                     android:layout_gravity="bottom"
-                    android:alpha="0.5"/>
+                    android:alpha="1"/>
 
                 <TextView
                     android:text="프로필"
@@ -51,7 +51,8 @@
                     android:layout_weight="1"
                     android:textAlignment="center"
                     android:textSize="40sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textColor="#DFFFFFFF"/>
 
                 <TextView
                     android:text="당신의 프로필을 확인하세요"
@@ -61,7 +62,8 @@
                     android:layout_weight="1"
                     android:textAlignment="center"
                     android:textSize="20sp"
-                    android:textStyle="italic"/>
+                    android:textStyle="italic"
+                    android:textColor="#DFFFFFFF"/>
             </LinearLayout>
 
             <LinearLayout
@@ -195,29 +197,20 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         app:fabSize="normal"
-        app:srcCompat="@drawable/logout"
-        android:scaleType="centerInside"
-        android:id="@+id/fb_main_logout"
-        android:layout_gravity="start|bottom"
-        app:backgroundTint="@android:color/white"/>
-
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabSize="normal"
         app:srcCompat="@drawable/menu"
         android:scaleType="center"
         android:id="@+id/fb_main_menu"
-        android:layout_gravity="bottom|end"
-        app:backgroundTint="@android:color/white"/>
+        android:layout_gravity="top|end"
+        app:backgroundTint="@android:color/white"
+        app:rippleColor="@color/colorPrimary"
+        android:layout_margin="20dp"/>
 
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:srcCompat="@color/colorPrimaryDark"
         android:id="@+id/iv_ani"
-        android:alpha="0"/>
+        android:alpha="1"
+        android:background="#AF000000"/>
 
 </android.support.design.widget.CoordinatorLayout>

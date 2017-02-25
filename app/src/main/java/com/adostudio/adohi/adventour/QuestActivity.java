@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Sticker;
 import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.userdefinedtargets.UserDefinedTargets;
@@ -35,14 +36,21 @@ public class QuestActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager mLayoutManager;
     private ArrayList<Sticker> stickerArrayList;
 
-    private int testid;
+    private MyApplication myApplication;
 
     @BindView(R.id.rv_sticker_list)RecyclerView mRecyclerView;
     @BindView(R.id.iv_quest_camera)ImageView questCameraImageView;
     @OnClick(R.id.iv_quest_camera)void questCameraClick() {
 
-        Intent intent = new Intent(this, UserDefinedTargets.class);
-        intent.putExtra("test", "tw1.jpg");
+        Intent intent = new Intent(this, QuestIssueActivity.class);
+        intent.putExtra("issue", true);
+        intent.putExtra("position", myApplication.getStickerPosition());
+        startActivity(intent);
+    }
+    @BindView(R.id.iv_quest_quest)ImageView questImageView;
+    @OnClick(R.id.iv_quest_quest)void questClick() {
+
+        Intent intent = new Intent(this, QuestListActivity.class);
         startActivity(intent);
     }
     @Override
@@ -50,6 +58,7 @@ public class QuestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest);
         ButterKnife.bind(this);
+        myApplication = (MyApplication) getApplication();
         Intent intent = getIntent();
         uid = intent.getExtras().getString("uid");
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -78,5 +87,11 @@ public class QuestActivity extends AppCompatActivity {
         mAdapter = new StickerAdapter(this, stickerArrayList, mGlideRequestManager);
         mRecyclerView.setAdapter(mAdapter);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        myApplication.setStickerPosition(-1);
     }
 }

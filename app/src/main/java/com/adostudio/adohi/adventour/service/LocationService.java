@@ -4,16 +4,13 @@ import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-
 import com.adostudio.adohi.adventour.GetAchivementActivity;
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.db.Achievement;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +21,6 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.nhn.android.maps.NMapLocationManager;
 import com.nhn.android.maps.maplib.NGeoPoint;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -32,21 +28,22 @@ import java.util.Date;
  * Created by ADOHI on 2017-02-16.
  */
 
-public class LocationService extends Service {
+public class LocationService extends Service{
     public LocationService(){
         }
-    private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
-    private Location mCurrentLocation;
-    private LocationRequest mLocationRequest;
     public static NMapLocationManager mapLocationManager;
     private DatabaseReference mDatabase;
     private String uid;
+    private MyApplication myApplication;
+    public static double currentLng;
+    public static double currentLat;
     private final NMapLocationManager.OnLocationChangeListener onMyLocationChangeListener = new NMapLocationManager.OnLocationChangeListener() {
 
         @Override
         public boolean onLocationChanged(NMapLocationManager locationManager, final NGeoPoint myLocation) {
             try {
+                myApplication.setCurrentLng(myLocation.getLongitude());
+                myApplication.setCurrentLat(myLocation.getLatitude());
                 mDatabase.child("users").child(uid).runTransaction(new Transaction.Handler() {
                     @Override
                     public Transaction.Result doTransaction(MutableData mutableData) {
@@ -68,7 +65,7 @@ public class LocationService extends Service {
                             String strDate = dateFormat.format(date);
                             Achievement achievement = new Achievement(a.contentId, a.contentTypeId, a.overview, a.title, a.address,
                                     a.phonecall, a.homepage, strDate, a.lng, a.lat, a.imageUrl, distance);
-                            if (distance < 10) {
+                            if (distance < 3000) {
                                 user.achievementList.add(0, achievement);
                                 user.removeBookmark(a.contentId);
                                 Intent intent = new Intent(getApplicationContext(), GetAchivementActivity.class);
@@ -77,7 +74,6 @@ public class LocationService extends Service {
                                 intent.putExtra("title", achievement.title);
                                 intent.putExtra("contentid", achievement.contentId);
                                 startActivity(intent);
-                                user.score += 1;
                             }
                             else {
                                 a.distance = distance;
@@ -117,21 +113,12 @@ public class LocationService extends Service {
         @Override
         public void onLocationUpdateTimeout(NMapLocationManager locationManager) {
 
-            // stop location updating
-            //			Runnable runnable = new Runnable() {
-            //				public void run() {
-            //					stopMyLocation();
-            //				}
-            //			};
-            //			runnable.run();
-
         }
 
         @Override
         public void onLocationUnavailableArea(NMapLocationManager locationManager, NGeoPoint myLocation) {
 
         }
-
     };
 
     @Override
@@ -148,27 +135,24 @@ public class LocationService extends Service {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
-
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getToken() instead.
             uid = user.getUid();
-
         } else {
             // No user is signed in
         }
 
-
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        myApplication = (MyApplication)getApplication();
         return super.onStartCommand(intent, flags, startId);
     }
+
+
+
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
 
 }

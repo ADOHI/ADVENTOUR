@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.service.LocationService;
 import com.google.android.gms.auth.api.Auth;
@@ -47,11 +48,12 @@ import butterknife.OnClick;
 
 public class StartActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
 
+    private static final String TAG = "StartActivity";
+    private MyApplication myApplication;
+
     private GoogleApiClient mGoogleApiClient;
-
     private ProgressDialog mProgressDialog;
-
-    private static final String TAG = "SignInActivity";
+    private ProgressDialog dataLoadtingProgressDialog;
 
     private static final int RC_SIGN_IN = 9001;
 
@@ -60,8 +62,8 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
     private FirebaseAuth.AuthStateListener mAuthListener;
     private DatabaseReference mDatabase;
 
-    @BindView(R.id.bt_start)Button startButton;
-    @OnClick(R.id.bt_start)void startClick() {
+    @BindView(R.id.iv_login)ImageView loginButton;
+    @OnClick(R.id.iv_login)void loginClick() {
         Intent intent = new Intent(getApplicationContext(), LocationService.class);
         startService(intent);
         IntentFilter intentFilter = new IntentFilter();
@@ -70,13 +72,17 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         startActivity(activityStartIntent);
         overridePendingTransition(R.anim.push_left_in, R.anim.hold);
     }
-
+    @BindView(R.id.iv_logout)ImageView logoutButton;
+    @OnClick(R.id.iv_logout)void logoutClick() {
+        signOut();
+        revokeAccess();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         ButterKnife.bind(this);
-
+        myApplication = (MyApplication) getApplication();
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -93,14 +99,13 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         new TedPermission(this)
                 .setPermissionListener(permissionlistener)
                 .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET
                 , Manifest.permission.CAMERA, Manifest.permission.ACCESS_WIFI_STATE,
-                        Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        Manifest.permission.CHANGE_WIFI_STATE)
                 .check();
 
         findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
 
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -112,13 +117,15 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
                      if (user != null) {
                             // User is signed in
-
+                          myApplication.setMyName(user.getDisplayName());
+                          myApplication.setMyPhotoUrl(user.getPhotoUrl().toString());
+                          myApplication.setMyUid(user.getUid());
                           final User newUser = new User(user.getDisplayName());
                           final String uid = user.getUid();
                           newUser.photoUrl = user.getPhotoUrl().toString();
-                          Log.d("asdf", user.getPhotoUrl().toString());
                           newUser.uid = uid;
-                          mDatabase.child("users").child(user.getUid()).addListenerForSingleValueEvent(
+                         Log.d("currentuser", user.getDisplayName());
+                          mDatabase.child("users").child(user.getUid()).addValueEventListener(
                                   new ValueEventListener() {
                                       @Override
                                       public void onDataChange(DataSnapshot dataSnapshot) {
@@ -130,7 +137,8 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                                       public void onCancelled(DatabaseError databaseError) {
                                       }
                                   });
-
+                         loginButton.setVisibility(View.VISIBLE);
+                         logoutButton.setVisibility(View.VISIBLE);
 
                       }
                       else {
@@ -337,14 +345,12 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
     private void updateUI(boolean signedIn) {
 
         if (signedIn) {
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            startButton.setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.sign_in_button).setVisibility(View.INVISIBLE);
+
         } else {
-            //mStatusTextView.setText(R.string.signed_out);
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            startButton.setVisibility(View.GONE);
-            findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+            loginButton.setVisibility(View.INVISIBLE);
+            logoutButton.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -359,13 +365,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
             case R.id.sign_in_button:
                 signIn();
                 break;
-            case R.id.sign_out_button:
-                signOut();
-                break;
-            case R.id.disconnect_button:
-                revokeAccess();
-                break;
-
         }
 
     }

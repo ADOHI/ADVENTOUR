@@ -377,7 +377,7 @@ public class RefFreeFrameGL
         
         GLES20.glDisable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        
+
     }
     
 }

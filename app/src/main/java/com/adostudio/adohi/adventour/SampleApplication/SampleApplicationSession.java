@@ -55,7 +55,8 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     private int mVuforiaFlags = 0;
     
     // Holds the camera configuration to use upon resuming
-    private int mCamera = CameraDevice.CAMERA_DIRECTION.CAMERA_DIRECTION_DEFAULT;
+    public int mCamera = CameraDevice.CAMERA_DIRECTION.CAMERA_DIRECTION_DEFAULT;
+
     
 
     public SampleApplicationSession(SampleApplicationControl sessionControl)

@@ -47,6 +47,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -82,15 +83,14 @@ import butterknife.OnClick;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener
         ,TabLayout.OnTabSelectedListener{
-
     private GoogleMap mMap;
+    private SupportMapFragment mapFragment;
     private GoogleApiClient mGoogleApiClient;
     private HashMap<Marker, Integer> mHashMap;
     private Location mLastLocation;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private PendingResult<LocationSettingsResult> result;
-    private Fragment mapview;
     final int PLACE_PICKER_REQUEST = -1;
     private ArrayList<Achievement> markerAchievementList;
     private ArrayList<Achievement> markerBookmarkList;
@@ -118,7 +118,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/searchKeyword");
             urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
             urlBuilder.append("&keyword=" + URLEncoder.encode(searchWindowEditText.getText().toString(), "utf-8"));
-            urlBuilder.append("&areaCode=&sigunguCode=&cat1=&cat2=&cat3=&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=B&numOfRows=12&pageNo=1");
+            urlBuilder.append("&areaCode=&sigunguCode=&cat1=&cat2=&cat3=&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=B&numOfRows=999&pageNo=1");
             GetXMLTask task = new GetXMLTask();
             task.execute(urlBuilder.toString());
         }catch (Exception ex){}
@@ -130,7 +130,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @BindView(R.id.rv_trophy_achievement)RecyclerView mTrophyRecyclerView;
 
     private TabLayout tabLayout;
-    Document doc = null;
+    private Document doc = null;
 
 
     private RecyclerView.Adapter mAdapter;
@@ -144,11 +144,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private DatabaseReference mDatabase;
     private String uid;
-    private LatLng markerLatlng;
 
     private TabLayout mTabLayout;
 
-    private SupportMapFragment mapFragment;
+
 
     private RequestManager mGlideRequestManager;
     @BindView(R.id.bt_refresh)FloatingActionButton refreshFloatingButton;
@@ -158,7 +157,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         urlBuilder.append("&contentTypeId=" + "&mapX" + "=" + String.format("%.6f",  mMap.getCameraPosition().target.longitude));
         urlBuilder.append("&mapY" + "=" + String.format("%.6f", mMap.getCameraPosition().target.latitude));
         urlBuilder.append("&radius" + "=" + Integer.toString(1000));
-        urlBuilder.append("&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=B&numOfRows=12&pageNo=1");
+        urlBuilder.append("&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=E&numOfRows=999&pageNo=1");
         GetXMLTask task = new GetXMLTask();
         task.execute(urlBuilder.toString());
     }
@@ -169,7 +168,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         ButterKnife.bind(this);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Obtain the SupportMapFragment and get_button notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -249,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mTrophyRecyclerView.setHasFixedSize(true);
         mTrophyLayoutManager = new LinearLayoutManager(this);
         mTrophyRecyclerView.setLayoutManager(mTrophyLayoutManager);
-        mTrophyAdapter = new MyAdapter(this, trophyList, mGlideRequestManager);
+        mTrophyAdapter = new AchievementAdapter(this, trophyList, mGlideRequestManager);
         mTrophyRecyclerView.setAdapter(mTrophyAdapter);
         mTrophyRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
@@ -260,7 +259,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLastLocation = new Location(LocationManager.GPS_PROVIDER);
         mLastLocation.setLongitude(121);
         mLastLocation.setLatitude(37);
-
 
 
 
@@ -333,9 +331,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
         mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        // Add a marker in Sydney and move the camera
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
         {
             @Override
@@ -368,7 +366,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            Log.d("holy funcking", ""+mLastLocation.getLatitude());
         }
         startLocationUpdates();
         trackerButtonClick();
@@ -513,14 +510,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(Document doc) {
 
             String s = "";
-            //data태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
             NodeList nodeList = doc.getElementsByTagName("item");
-            //data 태그를 가지는 노드를 찾음, 계층적인 노드 구조를 반환
-            //NMapPOIdata poiData = new NMapPOIdata(12, mMapViewerResourceProvider);
             markerAchievementList.clear();
             mMap.clear();
             for(int i = 0; i< nodeList.getLength(); i++){
-                Node node = nodeList.item(i); //data엘리먼트 노드
+                Node node = nodeList.item(i);
                 Element fstElmnt = (Element) node;
                 NodeList contentTypeId = fstElmnt.getElementsByTagName("contenttypeid");
                 if(!(contentTypeId.item(0).getChildNodes().item(0).getNodeValue().equals("25"))) {
@@ -608,7 +602,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lat += a.lat;
             lng += a.lng;
         }
-        markerLatlng = new LatLng(lat/ markerAchievementList.size(), lng/ markerAchievementList.size());
 
         for(Achievement a : markerBookmarkList){
             LatLng pinPosition = new LatLng(a.lat, a.lng);

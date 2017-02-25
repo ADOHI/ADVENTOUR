@@ -1,8 +1,6 @@
 package com.adostudio.adohi.adventour;
 
 import android.content.Intent;
-import android.media.Image;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -32,6 +30,7 @@ public class GetAchivementActivity extends AppCompatActivity {
     private RequestManager mGlideRequestManager;
     private DatabaseReference mDatabase;
     private String uid;
+    private String exUid = "";
     private String contentId;
     private String name;
     private String imageUrl;
@@ -62,7 +61,6 @@ public class GetAchivementActivity extends AppCompatActivity {
                             Conquest conquest = new Conquest(contentId, uid, name, imageUrl);
                             mDatabase.child("conquests").child(contentId).setValue(conquest);
                         }
-
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
                         }
@@ -72,13 +70,30 @@ public class GetAchivementActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            mDatabase.child("users").child(uid).child("flag").setValue(user.flag + 1);
+                            user.flagList.add(user.achievementList.get(0));
+                            mDatabase.child("users").child(uid).setValue(user);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
                         }
                     });
+            if(exUid != ""){
+                mDatabase.child("users").child(exUid).addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                User user = dataSnapshot.getValue(User.class);
+                                user.removeFlag(contentId);
+                                mDatabase.child("users").child(exUid).setValue(user);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+            }
+
             explosionField.explode(getPhotoImageView);
             explosionField.explode(getNameTextView);
             getFlagImageView.setVisibility(View.VISIBLE);
@@ -90,7 +105,7 @@ public class GetAchivementActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            Sticker sticker = new Sticker("tw"+index+1+".ipg", resid);
+                            Sticker sticker = new Sticker("tw"+(index+1)+".jpg", resid);
                             user.stickerList.add(sticker);
                             mDatabase.child("users").child(uid).setValue(user);
                         }
@@ -136,6 +151,7 @@ public class GetAchivementActivity extends AppCompatActivity {
                            Conquest conquest = dataSnapshot.getValue(Conquest.class);
                            mGlideRequestManager.load(conquest.imageUrl).into(getPhotoImageView);
                            getNameTextView.setText(conquest.name);
+                           exUid = uid;
                            if(conquest.uid == uid){
                                getKickImageView.setVisibility(View.INVISIBLE);
                            }

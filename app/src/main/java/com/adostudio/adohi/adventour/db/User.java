@@ -17,28 +17,25 @@ public class User {
 
     public String userName;
     public String photoUrl;
-    public int score;
     public String memo;
     public String uid;
-    public int flag;
 
     public ArrayList<Achievement> bookmarkList;
     public ArrayList<Achievement> achievementList;
-    public ArrayList<Achievement> falgList;
+    public ArrayList<Achievement> flagList;
     public ArrayList<String> friendList;
     public ArrayList<Sticker> stickerList;
-
+    public ArrayList<Quest> questList;
     public User() {
         this.friendList = new ArrayList<>();
         this.achievementList = new ArrayList<>();
         this.bookmarkList = new ArrayList<>();
-        this.falgList = new ArrayList<>();
+        this.flagList = new ArrayList<>();
         this.stickerList = new ArrayList<>();
+        this.questList = new ArrayList<>();
         this.photoUrl = null;
-        this.score = 0;
         this.memo = "";
         this.uid = "";
-        this.flag = 0;
     }
 
 
@@ -65,9 +62,31 @@ public class User {
         int index = 0;
         for(Achievement a : bookmarkList){
             if(a.contentId.equals(id)){
-                bookmarkList.remove(index++);
+                bookmarkList.remove(index);
                 break;
-            }
+            } else index++;
+        }
+    }
+
+    public void removeFlag(String id){
+        int index = 0;
+        for(Achievement a : bookmarkList){
+            if(a.contentId.equals(id)){
+                flagList.remove(index);
+                break;
+            } else index++;
+
+        }
+    }
+
+    public void removeQuest(double lng, double lat){
+        int index = 0;
+        for(Quest q : questList){
+            if(q.locationLat == lat && q.locationLng == lng){
+                questList.remove(index);
+                break;
+            } else index++;
+
         }
     }
 

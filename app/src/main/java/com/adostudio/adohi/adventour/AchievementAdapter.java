@@ -1,5 +1,6 @@
 package com.adostudio.adohi.adventour;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,8 +23,8 @@ import java.util.Date;
 public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.ViewHolder> {
     private ArrayList<Achievement> mAchievementDataset;
     private RequestManager mRequestManager;
-    private static ProfileActivity activity;
-    public AchievementAdapter(ProfileActivity activity, ArrayList<Achievement> myAchievementDataset, RequestManager requestManager) {
+    private static Activity activity;
+    public AchievementAdapter(Activity activity, ArrayList<Achievement> myAchievementDataset, RequestManager requestManager) {
         this.activity = activity;
         mAchievementDataset = myAchievementDataset;
         mRequestManager = requestManager;
@@ -85,7 +86,7 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        // - get element from your dataset at this position
+        // - get_button element from your dataset at this position
         // - replace the contents of the view with that element
         holder.achievementTitleTextView.setText(mAchievementDataset.get(position).title);
         holder.achievementSumnailImageView.setImageResource(R.drawable.btn_green_pressed);

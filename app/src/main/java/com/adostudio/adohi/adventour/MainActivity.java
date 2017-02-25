@@ -1,5 +1,7 @@
 package com.adostudio.adohi.adventour;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -11,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -19,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.db.Achievement;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
@@ -38,6 +42,7 @@ import com.xgc1986.parallaxPagerTransformer.ParallaxPagerTransformer;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     Timer timer;
     int page = 0;
     int maxPage = 0;
+    private int select = 1;
     boolean pageCheck = false;
 
     private DemoParallaxAdapter mAdapter;
@@ -61,43 +67,67 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private DemoParallaxFragment achievementEmpty;
     private boolean blurBoolean = false;
     private int width;
-    private int selectMenu = 1;
     private DatabaseReference mDatabase;
     private String uid;
     @BindView(R.id.iv_main_resume)ImageView mainResumeImageView;
     @BindView(R.id.tv_main_profile_big)TextView mainProfileBigTextView;
     @BindView(R.id.tv_main_profile_small)TextView mainProfileSmallTextView;
     @OnClick(R.id.iv_main_resume)void mainResumeClick(){
-        Intent intent = new Intent(this, ProfileActivity.class);
-        intent.putExtra("uid", uid);
-        intent.putExtra("mine", true);
-        intent.putExtra("add", 0);
-        startActivity(intent);
+        if(select != 1) {
+            select = 1;
+            selectMenu(select);
+        }
+        else {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            intent.putExtra("uid", uid);
+            intent.putExtra("mine", true);
+            intent.putExtra("add", 0);
+            startActivity(intent);
+        }
     }
 
     @BindView(R.id.iv_main_trophy)ImageView mainTrophyImageView;
     @BindView(R.id.tv_main_trophy_big)TextView mainTrophyBigTextView;
     @BindView(R.id.tv_main_trophy_small)TextView mainTrophySmallTextView;
     @OnClick(R.id.iv_main_trophy)void mainTrophyClick(){
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
+        if(select != 2) {
+            select = 2;
+            selectMenu(select);
+        }
+        else {
+            Intent intent = new Intent(this, MapsActivity.class);
+            startActivity(intent);
+        }
     }
 
     @BindView(R.id.iv_main_quest)ImageView mainQuestImageView;
     @BindView(R.id.tv_main_quest_big)TextView mainQuestBigTextView;
     @BindView(R.id.tv_main_quest_small)TextView mainQuestSmallTextView;
     @OnClick(R.id.iv_main_quest)void mainQuestClick(){
-        Intent intent = new Intent(this, QuestActivity.class);
-        intent.putExtra("uid", uid);
-        startActivity(intent);
+        if(select != 3) {
+            select = 3;
+            selectMenu(select);
+        }
+        else {
+            Intent intent = new Intent(this, QuestActivity.class);
+            intent.putExtra("uid", uid);
+            startActivity(intent);
+        }
     }
 
     @BindView(R.id.iv_main_friend)ImageView mainFriendImageView;
     @BindView(R.id.tv_main_friend_big)TextView mainFriendBigTextView;
     @BindView(R.id.tv_main_friend_small)TextView mainFriendSmallTextView;
     @OnClick(R.id.iv_main_friend)void mainFriendClick(){
-        Intent intent = new Intent(this, FriendActivity.class);
-        startActivity(intent);
+        if(select != 4) {
+            select = 4;
+            selectMenu(select);
+        }
+        else {
+            Intent intent = new Intent(this, FriendActivity.class);
+            intent.putExtra("issue", false);
+            startActivity(intent);
+        }
     }
 
     @BindView(R.id.fb_main_menu)FloatingActionButton mainMenuFloatingActionButton;
@@ -122,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             first.putString("date", user.achievementList.get(0).time);
                         } catch (Exception ex){
                             first.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            first.putString("name", "aaa");
+                            first.putString("name", "지금 당장 모험을 떠나세요");
                         }
                         first.putBoolean("blur", blurBoolean);
                         achievementFrist.setArguments(first);
@@ -134,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             second.putString("date", user.achievementList.get(1).time);
                         }  catch (Exception ex){
                             second.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            second.putString("name", "aaa");
+                            second.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         second.putBoolean("blur", blurBoolean);
@@ -147,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             third.putString("date", user.achievementList.get(2).time);
                         }  catch (Exception ex){
                             third.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            third.putString("name", "aaa");
+                            third.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         third.putBoolean("blur", blurBoolean);
@@ -160,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             fourth.putString("date", user.achievementList.get(3).time);
                         }  catch (Exception ex){
                             fourth.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            fourth.putString("name", "aaa");
+                            fourth.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         fourth.putBoolean("blur", blurBoolean);
@@ -182,23 +212,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         //setBlur(blurBoolean);
         showMenu(blurBoolean);
     }
-    @BindView(R.id.fb_main_logout)FloatingActionButton mainLogoutFloatingActionButton;
-    @OnClick(R.id.fb_main_logout)void mainLogoutClick(){
-        Log.d("aaa", "ccc");
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                    }
-
-                });
-
-        Intent intent = new Intent(this, StartActivity.class);
-        startActivity(intent);
-        finish();
-        Log.d("aaa", "ccc");
-
-    }
 
     @BindView(R.id.ll_main_first)LinearLayout firstLayout;
     @BindView(R.id.ll_main_second)LinearLayout secondLayout;
@@ -215,9 +228,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setBackgroundColor(0xFF000000);
 
-        ParallaxPagerTransformer pt = new ParallaxPagerTransformer((R.id.image));
+        ParallaxPagerTransformer pt = new ParallaxPagerTransformer((R.id.kbv_main_image));
         pt.setBorder(10);
-        //pt.setSpeed(0.2f);
+
         mPager.setPageTransformer(false, pt);
 
         mAdapter = new DemoParallaxAdapter(getSupportFragmentManager());
@@ -229,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         achievementFourth = new DemoParallaxFragment();
         mPager.setAdapter(mAdapter);
         showMenu(blurBoolean);
-        //mPager.setAdapter(mAdapter);
+
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
             getActionBar().show();
@@ -265,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        mDatabase.child("users").child(uid).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -275,7 +288,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         mAdapter.remove(achievementFourth);
                         User user = dataSnapshot.getValue(User.class);
 
-
                         Bundle first = new Bundle();
                         try {
                             first.putString("imageurl", user.achievementList.get(0).imageUrl);
@@ -283,12 +295,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             first.putString("date", user.achievementList.get(0).time);
                         } catch (Exception ex){
                             first.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            first.putString("name", "aaa");
+                            first.putString("name", "지금 당장 모험을 떠나세요");
                          }
                         first.putBoolean("blur", blurBoolean);
                         achievementFrist.setArguments(first);
-
-
 
                         Bundle second = new Bundle();
                         try{
@@ -297,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             second.putString("date", user.achievementList.get(1).time);
                         }  catch (Exception ex){
                             second.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            second.putString("name", "aaa");
+                            second.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         second.putBoolean("blur", blurBoolean);
@@ -310,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             third.putString("date", user.achievementList.get(2).time);
                         }  catch (Exception ex){
                             third.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            third.putString("name", "aaa");
+                            third.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         third.putBoolean("blur", blurBoolean);
@@ -323,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             fourth.putString("date", user.achievementList.get(3).time);
                         }  catch (Exception ex){
                             fourth.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
-                            fourth.putString("name", "aaa");
+                            fourth.putString("name", "지금 당장 모험을 떠나세요");
                         }
 
                         second.putBoolean("blur", blurBoolean);
@@ -348,6 +358,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
+
 
     }
 
@@ -395,8 +407,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void showMenu (boolean show){
+        Animation ani01 = new AlphaAnimation(0.0f, 1.0f);
+        ani01.setDuration(3000);
+        mainResumeImageView.setAnimation(ani01);
         if(show) {
             firstLayout.setVisibility(View.VISIBLE);
+            ani01.start();
             secondLayout.setVisibility(View.VISIBLE);
             thirdLayout.setVisibility(View.VISIBLE);
             fourthLayout.setVisibility(View.VISIBLE);
@@ -406,12 +422,130 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             thirdLayout.setVisibility(View.GONE);
             fourthLayout.setVisibility(View.GONE);
         }
+
         Animation animation = new AlphaAnimation(1.0f, 0.0f);
         animation.setDuration(2000);
+        animation.setFillAfter(true);
         aniImageView.setAnimation(animation);
+        animation.start();
     }
 
     public void selectMenu (int select){
+        int blackColor = 0xAF000000;
+        int whiteColor = 0xDFFFFFFF;
+        float blackAlpha = 0.5f;
+        float whiteAlpha = 1.0f;
+        mainResumeImageView.setAlpha(blackAlpha);
+        mainProfileBigTextView.setTextColor(blackColor);
+        mainProfileSmallTextView.setTextColor(blackColor);
+        mainTrophyImageView.setAlpha(blackAlpha);
+        mainTrophyBigTextView.setTextColor(blackColor);
+        mainTrophySmallTextView.setTextColor(blackColor);
+        mainQuestImageView.setAlpha(blackAlpha);
+        mainQuestBigTextView.setTextColor(blackColor);
+        mainQuestSmallTextView.setTextColor(blackColor);
+        mainFriendImageView.setAlpha(blackAlpha);
+        mainFriendBigTextView.setTextColor(blackColor);
+        mainFriendSmallTextView.setTextColor(blackColor);
+        if(select == 1){
+            mainResumeImageView.setAlpha(whiteAlpha);
+            mainProfileBigTextView.setTextColor(whiteColor);
+            mainProfileSmallTextView.setTextColor(whiteColor);
+        }
+        if(select == 2){
+            mainTrophyImageView.setAlpha(whiteAlpha);
+            mainTrophyBigTextView.setTextColor(whiteColor);
+            mainTrophySmallTextView.setTextColor(whiteColor);
+        }
+        if(select == 3){
+            mainQuestImageView.setAlpha(whiteAlpha);
+            mainQuestBigTextView.setTextColor(whiteColor);
+            mainQuestSmallTextView.setTextColor(whiteColor);
+        }
+        if(select == 4){
+            mainFriendImageView.setAlpha(whiteAlpha);
+            mainFriendBigTextView.setTextColor(whiteColor);
+            mainFriendSmallTextView.setTextColor(whiteColor);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mDatabase.child("users").child(uid).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        mAdapter.remove(achievementFrist);
+                        mAdapter.remove(achievementSecond);
+                        mAdapter.remove(achievementThird);
+                        mAdapter.remove(achievementFourth);
+                        User user = dataSnapshot.getValue(User.class);
+
+                        Bundle first = new Bundle();
+                        try {
+                            first.putString("imageurl", user.achievementList.get(0).imageUrl);
+                            first.putString("name", user.achievementList.get(0).title);
+                            first.putString("date", user.achievementList.get(0).time);
+                        } catch (Exception ex){
+                            first.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
+                            first.putString("name", "지금 당장 모험을 떠나세요");
+                        }
+                        first.putBoolean("blur", blurBoolean);
+                        achievementFrist.setArguments(first);
+
+                        Bundle second = new Bundle();
+                        try{
+                            second.putString("imageurl", user.achievementList.get(1).imageUrl);
+                            second.putString("name", user.achievementList.get(1).title);
+                            second.putString("date", user.achievementList.get(1).time);
+                        }  catch (Exception ex){
+                            second.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
+                            second.putString("name", "지금 당장 모험을 떠나세요");
+                        }
+
+                        second.putBoolean("blur", blurBoolean);
+                        achievementSecond.setArguments(second);
+
+                        Bundle third = new Bundle();
+                        try{
+                            third.putString("imageurl", user.achievementList.get(2).imageUrl);
+                            third.putString("name", user.achievementList.get(2).title);
+                            third.putString("date", user.achievementList.get(2).time);
+                        }  catch (Exception ex){
+                            third.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
+                            third.putString("name", "지금 당장 모험을 떠나세요");
+                        }
+
+                        third.putBoolean("blur", blurBoolean);
+                        achievementThird.setArguments(third);
+
+                        Bundle fourth = new Bundle();
+                        try{
+                            fourth.putString("imageurl", user.achievementList.get(3).imageUrl);
+                            fourth.putString("name", user.achievementList.get(3).title);
+                            fourth.putString("date", user.achievementList.get(3).time);
+                        }  catch (Exception ex){
+                            fourth.putString("imageurl", "https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg");
+                            fourth.putString("name", "지금 당장 모험을 떠나세요");
+                        }
+
+                        second.putBoolean("blur", blurBoolean);
+                        achievementFourth.setArguments(fourth);
+                        mAdapter.add(achievementFrist);
+                        mAdapter.add(achievementSecond);
+                        mAdapter.add(achievementThird);
+                        mAdapter.add(achievementFourth);
+                        if(page!=0)mPager.setCurrentItem(page-1, true);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+        blurBoolean = false;
+        showMenu(blurBoolean);
 
     }
 }

@@ -21,14 +21,14 @@
         <ImageView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/quest_main"
+            app:srcCompat="@drawable/ex"
             android:id="@+id/iv_quest_quest"
             android:layout_weight="1" />
 
         <ImageView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/icon_camera_normal"
+            app:srcCompat="@drawable/quest_main"
             android:id="@+id/iv_quest_camera"
             android:layout_weight="1" />
 

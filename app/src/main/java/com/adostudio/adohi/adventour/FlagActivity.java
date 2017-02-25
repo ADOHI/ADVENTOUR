@@ -1,11 +1,11 @@
 package com.adostudio.adohi.adventour;
 
-import android.net.Uri;
-import android.support.v4.app.FragmentActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
-import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.db.Achievement;
+import com.adostudio.adohi.adventour.db.User;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,54 +32,76 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flag);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Obtain the SupportMapFragment and get_button notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
-
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getToken() instead.
             uid = user.getUid();
-
-        } else {
-            // No user is signed in
         }
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("users").child(uid).addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
-                        double lat = 0;
-                        double lng = 0;
-                        User user = dataSnapshot.getValue(User.class);
-                        for(Achievement a : user.achievementList){
-                            LatLng pinPosition = new LatLng(a.lat, a.lng);
-                            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag_small);
-                            Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .title(a.title)
-                                    .position(pinPosition));
-                            marker.setIcon(icon);
-                            lat += a.lat;
-                            lng += a.lng;
+        Intent intent = getIntent();
+
+        if(intent.getExtras().getBoolean("trophy_button")) {
+            mDatabase.child("users").child(uid).addValueEventListener(
+                    new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            // Get user value
+                            double lat = 0;
+                            double lng = 0;
+                            User user = dataSnapshot.getValue(User.class);
+                            for(Achievement a : user.achievementList){
+                                LatLng pinPosition = new LatLng(a.lat, a.lng);
+                                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.trophy_map);
+                                Marker marker = mMap.addMarker(new MarkerOptions()
+                                        .title(a.title)
+                                        .position(pinPosition));
+                                marker.setIcon(icon);
+                                lat += a.lat;
+                                lng += a.lng;
+                            }
+                            LatLng latLng = new LatLng(lat/user.achievementList.size(), lng/user.achievementList.size());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
                         }
-                        LatLng latLng = new LatLng(lat/user.achievementList.size(), lng/user.achievementList.size());
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
+                        }
+                    });
+        } else {
+
+            mDatabase.child("users").child(uid).addValueEventListener(
+                    new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            // Get user value
+                            double lat = 0;
+                            double lng = 0;
+                            User user = dataSnapshot.getValue(User.class);
+                            for (Achievement a : user.flagList) {
+                                LatLng pinPosition = new LatLng(a.lat, a.lng);
+                                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag_small);
+                                Marker marker = mMap.addMarker(new MarkerOptions()
+                                        .title(a.title)
+                                        .position(pinPosition));
+                                marker.setIcon(icon);
+                                lat += a.lat;
+                                lng += a.lng;
+                            }
+                            LatLng latLng = new LatLng(lat / user.flagList.size(), lng / user.flagList.size());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+        }
     }
-
 
     /**
      * Manipulates the map once available.

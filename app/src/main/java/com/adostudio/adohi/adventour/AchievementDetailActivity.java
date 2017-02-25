@@ -9,14 +9,20 @@ import android.location.LocationManager;
 import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adostudio.adohi.adventour.db.Conquest;
+import com.adostudio.adohi.adventour.db.Review;
+import com.adostudio.adohi.adventour.db.ReviewAchievement;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.adostudio.adohi.adventour.db.User;
@@ -36,6 +42,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,6 +54,10 @@ import butterknife.OnClick;
 
 public class AchievementDetailActivity extends AppCompatActivity {
 
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private ArrayList<Review> reviewList;
+    @BindView(R.id.rv_review)RecyclerView reviewRecyclerView;
     private Document doc = null;
     private RequestManager mGlideRequestManager;
     private DatabaseReference mDatabase;
@@ -119,6 +130,15 @@ public class AchievementDetailActivity extends AppCompatActivity {
                       }
                 });
     }
+
+    @BindView(R.id.fab_review)FloatingActionButton reviewAddFAB;
+    @OnClick(R.id.fab_review)void reviewAddFABClick(){
+        Intent intent = new Intent(this, ReviewActivity.class);
+        intent.putExtra("contentid", bookmarkContentId);
+        startActivity(intent);
+    }
+    @BindView(R.id.tv_achievement_score)TextView scoreTextView;
+    @BindView(R.id.tv_review_count)TextView reviewCountTextView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,14 +147,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
-
             uid = user.getUid();
-
-        } else {
-
         }
         
         
@@ -161,6 +174,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
                         if(user.checkAchievementId(bookmarkContentId)){
                             detailTrophyImageView.setImageResource(R.drawable.trophy_on);
                             detailTrophyTextView.setText("획득");
+                            reviewAddFAB.setVisibility(View.VISIBLE);
                         }
                         // ...
                     }
@@ -211,7 +225,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("loaction");
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        final BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.d("whyyyyy", "dhoooo");
@@ -230,8 +244,39 @@ public class AchievementDetailActivity extends AppCompatActivity {
         };
         registerReceiver(receiver,intentFilter);
 
-    }
 
+        mDatabase.child("reviews").child(bookmarkContentId).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // Get user value
+                        if(dataSnapshot.exists()) {
+                            reviewList.clear();
+                            ReviewAchievement reviewAchievement = dataSnapshot.getValue(ReviewAchievement.class);
+                            reviewList.addAll(reviewAchievement.reviews);
+                            mAdapter.notifyDataSetChanged();
+                            String score = String.format("%.1f" , reviewAchievement.stars);
+                            scoreTextView.setText(score);
+                            reviewCountTextView.setText(reviewList.size()+"");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+        reviewList = new ArrayList<>();
+        mGlideRequestManager = Glide.with(this);
+        reviewRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        reviewRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new ReviewAdapter(this, reviewList, mGlideRequestManager);
+        reviewRecyclerView.setAdapter(mAdapter);
+        reviewRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+
+    }
     private class GetXMLTask extends AsyncTask<String, Void, Document> {
 
         @Override

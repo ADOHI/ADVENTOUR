@@ -10,7 +10,6 @@ countries.
 
 package com.adostudio.adohi.adventour.userdefinedtargets;
 
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -20,11 +19,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.opengl.GLES20;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -36,6 +36,15 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.FirebaseDatabase;
 import com.vuforia.CameraDevice;
 import com.vuforia.DataSet;
 import com.vuforia.ImageTargetBuilder;
@@ -57,11 +66,20 @@ import butterknife.ButterKnife;
 
 
 // The main activity for the UserDefinedTargets sample.
-public class UserDefinedTargets extends Activity implements
-    SampleApplicationControl
+public class UserDefinedTargets extends FragmentActivity implements
+    SampleApplicationControl, OnMapReadyCallback
 {
+
     private static final String LOGTAG = "UserDefinedTargets";
-    
+    private MyApplication myApplication;
+    private double questLng;
+    private double questLat;
+    private String questAsset = "tw1.jpg";
+    private int questResId;
+    private GoogleMap mMap;
+    private SupportMapFragment mapFragment;
+
+
     private SampleApplicationSession vuforiaAppSession;
     
     // Our OpenGL view:
@@ -77,7 +95,7 @@ public class UserDefinedTargets extends Activity implements
     private RelativeLayout mUILayout;
     private View mBottomBar;
     private View mCameraButton;
-    private ImageView testimage;
+    public ImageView testimage;
     
     // Alert dialog for displaying SDK errors
     private AlertDialog mDialog;
@@ -85,8 +103,7 @@ public class UserDefinedTargets extends Activity implements
     int targetBuilderCounter = 1;
     
     DataSet dataSetUserDef = null;
-    DataSet targetDatabase = null;
-    
+
     private GestureDetector mGestureDetector;
 
     private ArrayList<View> mSettingsAdditionalViews;
@@ -102,7 +119,7 @@ public class UserDefinedTargets extends Activity implements
     private AlertDialog mErrorDialog;
     
     boolean mIsDroidDevice = false;
-    private String textureFile;
+
     // Called when the activity first starts or needs to be recreated after
     // resuming the application or a configuration change.
     @Override
@@ -111,27 +128,44 @@ public class UserDefinedTargets extends Activity implements
         Log.d(LOGTAG, "onCreate");
         super.onCreate(savedInstanceState);
         ButterKnife.bind(this);
+
         Intent intent = getIntent();
-        textureFile =intent.getExtras().getString("test");
-
-
+        questLng = intent.getExtras().getDouble("questlng");
+        questLat = intent.getExtras().getDouble("questlat");
+        questAsset = intent.getExtras().getString("questasset");
+        questResId = intent.getExtras().getInt("questresid");
 
         vuforiaAppSession = new SampleApplicationSession(this);
         
         vuforiaAppSession
             .initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        
+
         // Load any sample specific textures:
         mTextures = new Vector<Texture>();
         loadTextures();
-        
+
         mGestureDetector = new GestureDetector(this, new GestureListener());
         
         mIsDroidDevice = android.os.Build.MODEL.toLowerCase().startsWith(
             "droid");
 
+        myApplication = (MyApplication) getApplication();
+
+
+
     }
-    
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        Log.d("aaaaa", questLat + "    " + questLng);
+        LatLng latLng = new LatLng(questLat, questLng);
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .title("보물")
+                .position(latLng));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+    }
     // Process Single Tap event to trigger autofocus
     private class GestureListener extends
         GestureDetector.SimpleOnGestureListener
@@ -174,7 +208,7 @@ public class UserDefinedTargets extends Activity implements
     private void loadTextures()
     {
 
-        mTextures.add(Texture.loadTextureFromApk(textureFile,
+        mTextures.add(Texture.loadTextureFromApk(questAsset,
             getAssets()));
 
     }
@@ -252,7 +286,6 @@ public class UserDefinedTargets extends Activity implements
         // Unload texture:
         mTextures.clear();
         mTextures = null;
-        
         System.gc();
     }
     
@@ -373,62 +406,45 @@ public class UserDefinedTargets extends Activity implements
         
         // Gets a reference to the Camera button
         mCameraButton = mUILayout.findViewById(R.id.camera_button);
-        testimage = (ImageView)mUILayout.findViewById(R.id.testimage);
+
         // Gets a reference to the loading dialog container
         loadingDialogHandler.mLoadingDialogContainer = mUILayout
             .findViewById(R.id.loading_layout);
         
         startUserDefinedTargets();
         initializeBuildTargetModeViews();
-        
+        mapFragment = (SupportMapFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         mUILayout.bringToFront();
+
     }
-    
-    
+
     // Button Camera clicked
-    public void onCameraClick(View v)
-    {
-        if (isUserDefinedTargetsRunning())
-        {
-            // Shows the loading dialog
-            loadingDialogHandler
-                .sendEmptyMessage(LoadingDialogHandler.SHOW_LOADING_DIALOG);
-            
-            // Builds the new target
-            startBuild();
-            View test = mGlView.getRootView();
-            test.setDrawingCacheEnabled(true);
-            Bitmap capturedBitmap = SavePixels(0,0,200, 200);
-            testimage.setImageBitmap(capturedBitmap);
-            Log.d("abccc", capturedBitmap.toString());
-        }
+    public void onCameraClick(View v) {
 
+        Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
+        currentLocation.setLongitude(myApplication.getCurrentLng());
+        currentLocation.setLatitude(myApplication.getCurrentLat());
+        Location qusetLocation = new Location(LocationManager.GPS_PROVIDER);
+        qusetLocation.setLongitude(questLng);
+        qusetLocation.setLatitude(questLat);
+        int distance = (int) currentLocation.distanceTo(qusetLocation);
+        if (distance < 50){
+            if (isUserDefinedTargetsRunning()) {
+                // Shows the loading dialog
+                loadingDialogHandler
+                        .sendEmptyMessage(LoadingDialogHandler.SHOW_LOADING_DIALOG);
 
+                // Builds the new target
+                startBuild();
 
-    }
-
-    public static Bitmap SavePixels(int x, int y, int w, int h){
-        int b[]=new int[w*(y+h)];
-        int bt[]=new int[w*h];
-        IntBuffer ib = IntBuffer.wrap(b);
-        ib.position(0);
-        GLES20.glReadPixels(0, 0, w, h, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ib);
-
-        for(int i=0, k=0; i<h; i++, k++)
-        {//remember, that OpenGL bitmap is incompatible with Android bitmap
-            //and so, some correction need.
-            for(int j=0; j<w; j++)
-            {
-                int pix=b[i*w+j];
-                int pb=(pix>>16)&0xff;
-                int pr=(pix<<16)&0x00ff0000;
-                int pix1=(pix&0xff00ff00) | pr | pb;
-                bt[(h-k-1)*w+j]=pix1;
             }
+         } else {
+            
         }
 
-        Bitmap sb=Bitmap.createBitmap(bt, w, h, Bitmap.Config.ARGB_8888);
-        return sb;
     }
 
     // Creates a texture given the filename
@@ -459,7 +475,6 @@ public class UserDefinedTargets extends Activity implements
         // Shows the bottom bar
         mBottomBar.setVisibility(View.VISIBLE);
         mCameraButton.setVisibility(View.VISIBLE);
-        testimage.setVisibility(View.VISIBLE);
     }
     
     
@@ -745,7 +760,7 @@ public class UserDefinedTargets extends Activity implements
             
             boolean result = CameraDevice.getInstance().setFocusMode(
                 CameraDevice.FOCUS_MODE.FOCUS_MODE_CONTINUOUSAUTO);
-            
+
             if (!result)
                 Log.e(LOGTAG, "Unable to enable continuous autofocus");
             setSampleAppMenuAdditionalViews();
@@ -843,6 +858,8 @@ public class UserDefinedTargets extends Activity implements
             }
             
         }
+
+
     }
     
     final public static int CMD_BACK = -1;
@@ -861,5 +878,19 @@ public class UserDefinedTargets extends Activity implements
     {
     }
 
-    
+    public String getQuestAsset() {
+        return questAsset;
+    }
+
+    public int getQuestResId() {
+        return questResId;
+    }
+
+    public double getQuestLat() {
+        return questLat;
+    }
+
+    public double getQuestLng() {
+        return questLng;
+    }
 }

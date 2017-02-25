@@ -29,9 +29,9 @@ public class DemoParallaxFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         mGlideRequestManager = Glide.with(this);
         View v = inflater.inflate(R.layout.demo_fragment_parallax, container, false);
-        image = (KenBurnsView) v.findViewById(R.id.image);
-        TextView text = (TextView)v.findViewById(R.id.name);
-        TextView date = (TextView)v.findViewById(R.id.time);
+        image = (KenBurnsView) v.findViewById(R.id.kbv_main_image);
+        TextView text = (TextView)v.findViewById(R.id.tv_main_name);
+        TextView date = (TextView)v.findViewById(R.id.tv_main_time);
         text.setText(getArguments().getString("name"));
         date.setText(getArguments().getString("date"));
         try {
@@ -41,6 +41,7 @@ public class DemoParallaxFragment extends Fragment {
                         .thumbnail(0.1f)
                         .into(image);
                 text.setTextColor(0xFFFFFFFF);
+                date.setTextColor(0xFFFFFFFF);
             }
 
             else {
@@ -50,6 +51,7 @@ public class DemoParallaxFragment extends Fragment {
                             .thumbnail(0.1f)
                             .into(image);
                     text.setTextColor(0x7F606060);
+                    date.setTextColor(0x7F606060);
                 }
         } catch (Exception ex){
             Log.d("Exception", "glide");

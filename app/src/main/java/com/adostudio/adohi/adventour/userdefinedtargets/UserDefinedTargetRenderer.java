@@ -9,16 +9,23 @@ countries.
 
 package com.adostudio.adohi.adventour.userdefinedtargets;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.IntBuffer;
 import java.util.Vector;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Environment;
 import android.util.Log;
 
+import com.adostudio.adohi.adventour.GetStickerActivity;
 import com.adostudio.adohi.adventour.SampleApplication.utils.CubeObject;
 import com.vuforia.Device;
 import com.vuforia.Matrix44F;
@@ -33,11 +40,13 @@ import com.adostudio.adohi.adventour.SampleApplication.SampleApplicationSession;
 import com.adostudio.adohi.adventour.SampleApplication.utils.CubeShaders;
 import com.adostudio.adohi.adventour.SampleApplication.utils.SampleUtils;
 import com.adostudio.adohi.adventour.SampleApplication.utils.Texture;
+import com.vuforia.ar.pl.DebugLog;
 
 
 // The renderer class for the ImageTargetsBuilder sample. 
 public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, SampleAppRendererControl
 {
+
     private static final String LOGTAG = "UDTRenderer";
 
     private SampleApplicationSession vuforiaAppSession;
@@ -126,6 +135,8 @@ public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, Sample
 
         // Call our function to render content from SampleAppRenderer class
         mSampleAppRenderer.render();
+
+
     }
 
 
@@ -151,13 +162,23 @@ public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, Sample
             Matrix44F modelViewMatrix_Vuforia = Tool
                 .convertPose2GLMatrix(trackableResult.getPose());
             float[] modelViewMatrix = modelViewMatrix_Vuforia.getData();
-            
+
             float[] modelViewProjection = new float[16];
             Matrix.translateM(modelViewMatrix, 0, 0.0f, 0.0f, kObjectScale);
             Matrix.scaleM(modelViewMatrix, 0, kObjectScale, kObjectScale,
                 kObjectScale);
             Matrix.multiplyMM(modelViewProjection, 0, projectionMatrix, 0, modelViewMatrix, 0);
-            
+            Log.d("test","1   :" + modelViewMatrix[2] + "    " + modelViewMatrix[6] + "    " + modelViewMatrix[10] + "    " + modelViewMatrix[14] + "    ");
+            //
+            if(modelViewMatrix[14] < 100) {
+                Intent intent = new Intent(mActivity, GetStickerActivity.class);
+                intent.putExtra("questasset", mActivity.getQuestAsset());
+                intent.putExtra("questresid", mActivity.getQuestResId());
+                intent.putExtra("questlng", mActivity.getQuestLng());
+                intent.putExtra("questlat", mActivity.getQuestLat());
+                mActivity.startActivity(intent);
+                mActivity.finish();
+            }
             GLES20.glUseProgram(shaderProgramID);
             
             GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,
@@ -180,7 +201,7 @@ public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, Sample
             
             GLES20.glDisableVertexAttribArray(vertexHandle);
             GLES20.glDisableVertexAttribArray(textureCoordHandle);
-            
+
             SampleUtils.checkGLError("UserDefinedTargets renderFrame");
         }
         
