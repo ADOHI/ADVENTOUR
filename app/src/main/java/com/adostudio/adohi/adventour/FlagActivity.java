@@ -28,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class FlagActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -42,7 +43,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flag);
-        // Obtain the SupportMapFragment and get_button notified when the map is ready to be used.
+        ButterKnife.bind(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -77,7 +78,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                             LatLng latLng = new LatLng(lat/user.getAchievementList().size(), lng/user.getAchievementList().size());
                             flagMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-                            flagCountTextView.setText(user.getAchievementList().size() + "");
+                            flagCountTextView.setText(Integer.toString(user.getAchievementList().size()));
                         }
 
                         @Override
@@ -86,6 +87,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
         } else {
+            Glide.with(this).load(R.drawable.flag_big).into(flagImageView);
             appDatabase.child("users").child(uid).addValueEventListener(
                     new ValueEventListener() {
                         @Override
@@ -106,7 +108,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                             LatLng latLng = new LatLng(lat / user.getFlagList().size(), lng / user.getFlagList().size());
                             flagMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-                            flagCountTextView.setText(user.getAchievementList().size() + "");
+                            flagCountTextView.setText(Integer.toString(user.getAchievementList().size()));
                         }
 
                         @Override
