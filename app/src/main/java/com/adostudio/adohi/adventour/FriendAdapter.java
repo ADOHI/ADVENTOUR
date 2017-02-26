@@ -1,8 +1,8 @@
 package com.adostudio.adohi.adventour;
 
-import android.app.Application;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.adostudio.adohi.adventour.appInit.MyApplication;
-import com.adostudio.adohi.adventour.db.Achievement;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.RequestManager;
 
@@ -21,14 +20,17 @@ import java.util.ArrayList;
  */
 
 public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder> {
-    private ArrayList<User> mUserDataset;
-    private RequestManager mRequestManager;
+
+    private static final String LOGTAG = "FriendAdapter";
+
+    private ArrayList<User> userDataset;
+    private RequestManager glideRequestManager;
     private static FriendActivity activity;
     private int addFriend;
     public FriendAdapter(FriendActivity activity, ArrayList<User> myUserDataset, int addFriend, RequestManager requestManager) {
         this.activity = activity;
-        this.mUserDataset = myUserDataset;
-        this.mRequestManager = requestManager;
+        this.userDataset = myUserDataset;
+        this.glideRequestManager = requestManager;
         this.addFriend = addFriend;
     }
 
@@ -60,14 +62,16 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         public void onClick(View v) {
             int id = v.getId();
             if(activity.getIssueCheck()){
-                MyApplication myapp = (MyApplication)activity.getApplication();
-                myapp.setIssueFriendImageUrl(imageUrl);
-                myapp.setIssueFriendName(name);
-                myapp.setIssueFriendUid(uid);
+                MyApplication.setIssueFriendImageUrl(imageUrl);
+                MyApplication.setIssueFriendName(name);
+                MyApplication.setIssueFriendUid(uid);
+                QuestIssueActivity.friendUid = uid;
+                QuestIssueActivity.friendUrl = imageUrl;
+                QuestIssueActivity.friendName = name;
                 activity.finish();
             } else {
                 Intent intent = new Intent(activity, ProfileActivity.class);
-                intent.putExtra("uid", uid);
+                intent.putExtra("frienduid", uid);
                 intent.putExtra("mine", false);
                 intent.putExtra("add", addFriend);
                 activity.startActivity(intent);
@@ -79,39 +83,37 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
     public FriendAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                        int viewType) {
 
-        View v = LayoutInflater.from(parent.getContext())
+        View friendRowView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.friend_row, parent, false);
 
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        ViewHolder friendViewHolder = new ViewHolder(friendRowView);
+        return friendViewHolder;
     }
-
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.friendNameTextView.setText(mUserDataset.get(position).userName);
-        holder.friendScoreTextView.setText(mUserDataset.get(position).achievementList.size()+"점");
-        holder.friendflagTextView.setText(mUserDataset.get(position).flagList.size()+"점");
+        holder.friendNameTextView.setText(userDataset.get(position).getUserName());
+        holder.friendScoreTextView.setText(userDataset.get(position).getAchievementList().size()+"점");
+        holder.friendflagTextView.setText(userDataset.get(position).getFlagList().size()+"점");
         try{
-            holder.friendLatelyTextView.setText(mUserDataset.get(position).achievementList.get(0).title);
+            holder.friendLatelyTextView.setText(userDataset.get(position).getAchievementList().get(0).getTitle());
         } catch (Exception ex) {
-            holder.friendLatelyTextView.setText("늅늅이 입니다");
+            holder.friendLatelyTextView.setText(activity.getString(R.string.newbie));
         }
-        holder.friendMemoTextView.setText(mUserDataset.get(position).memo);
+        holder.friendMemoTextView.setText(userDataset.get(position).getMemo());
         try{
-            mRequestManager.load(mUserDataset.get(position).photoUrl).into(holder.friendSumnailmageView);
+            glideRequestManager.load(userDataset.get(position).getPhotoUrl()).into(holder.friendSumnailmageView);
         }catch (Exception ex){
 
         }
-        holder.uid = mUserDataset.get(position).uid;
-        holder.name = mUserDataset.get(position).userName;
-        holder.imageUrl = mUserDataset.get(position).photoUrl;
+        holder.uid = userDataset.get(position).getUid();
+        holder.name = userDataset.get(position).getUserName();
+        holder.imageUrl = userDataset.get(position).getPhotoUrl();
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mUserDataset.size();
+        return userDataset.size();
     }
 }

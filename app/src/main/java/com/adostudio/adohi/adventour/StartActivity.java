@@ -9,11 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.service.LocationService;
 import com.google.android.gms.auth.api.Auth;
@@ -40,7 +38,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import java.util.ArrayList;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,12 +45,10 @@ import butterknife.OnClick;
 
 public class StartActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
 
-    private static final String TAG = "StartActivity";
-    private MyApplication myApplication;
+    private static final String LOGTAG = "StartActivity";
 
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
-    private ProgressDialog dataLoadtingProgressDialog;
 
     private static final int RC_SIGN_IN = 9001;
 
@@ -64,11 +59,11 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
     @BindView(R.id.iv_login)ImageView loginButton;
     @OnClick(R.id.iv_login)void loginClick() {
-        Intent intent = new Intent(getApplicationContext(), LocationService.class);
+        Intent intent = new Intent(this, LocationService.class);
         startService(intent);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("loaction");
-        Intent activityStartIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent activityStartIntent = new Intent(this, MainActivity.class);
         startActivity(activityStartIntent);
         overridePendingTransition(R.anim.push_left_in, R.anim.hold);
     }
@@ -82,7 +77,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         ButterKnife.bind(this);
-        myApplication = (MyApplication) getApplication();
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -117,32 +111,33 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
                      if (user != null) {
                             // User is signed in
-                          myApplication.setMyName(user.getDisplayName());
-                          myApplication.setMyPhotoUrl(user.getPhotoUrl().toString());
-                          myApplication.setMyUid(user.getUid());
-                          final User newUser = new User(user.getDisplayName());
+
                           final String uid = user.getUid();
-                          newUser.photoUrl = user.getPhotoUrl().toString();
-                          newUser.uid = uid;
-                         Log.d("currentuser", user.getDisplayName());
-                          mDatabase.child("users").child(user.getUid()).addValueEventListener(
+                          final String name = user.getDisplayName();
+                          final String photoUrl = user.getPhotoUrl().toString();
+                            Log.d(LOGTAG, name + "  " + user.getDisplayName());
+                          Log.d("currentuser", user.getDisplayName());
+                          mDatabase.child("users").child(uid).addValueEventListener(
                                   new ValueEventListener() {
                                       @Override
                                       public void onDataChange(DataSnapshot dataSnapshot) {
                                           if(!dataSnapshot.exists()){
+                                              User newUser = new User();
+                                              newUser.setUid(uid);
+                                              newUser.setUserName(name);
+                                              newUser.setPhotoUrl(photoUrl);
+                                              Log.d(LOGTAG, name + "  " + newUser.getUserName());
                                              mDatabase.child("users").child(uid).setValue(newUser);
                                           }
                                       }
                                       @Override
                                       public void onCancelled(DatabaseError databaseError) {
+                                          Log.d(LOGTAG, "database error : " + databaseError);
+
                                       }
                                   });
-                         loginButton.setVisibility(View.VISIBLE);
-                         logoutButton.setVisibility(View.VISIBLE);
-
                       }
                       else {
-                            // User is signed out
                       }
 
                 }
@@ -174,7 +169,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
 
-            Log.d(TAG, "Got cached sign-in");
+            Log.d(LOGTAG, "Got cached sign-in");
 
             GoogleSignInResult result = opr.get();
 
@@ -231,7 +226,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
     private void handleSignInResult(GoogleSignInResult result) {
 
-        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+        Log.d(LOGTAG, "handleSignInResult:" + result.isSuccess());
 
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
@@ -247,11 +242,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
     }
 
-    // [END handleSignInResult]
-
-
-
-    // [START signIn]
 
     private void signIn() {
 
@@ -259,11 +249,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    // [END signIn]
-
-
-
-    // [START signOut]
 
     private void signOut() {
 
@@ -283,11 +268,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
     }
 
-    // [END signOut]
-
-
-
-    // [START revokeAccess]
 
     private void revokeAccess() {
 
@@ -307,10 +287,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
     }
 
-    // [END revokeAccess]
-
-
-
     @Override
 
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -319,11 +295,9 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
         // be available.
 
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Log.d(LOGTAG, "onConnectionFailed:" + connectionResult);
 
     }
-
-
 
     private void showProgressDialog() {
 
@@ -346,6 +320,8 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
         if (signedIn) {
             findViewById(R.id.sign_in_button).setVisibility(View.INVISIBLE);
+            loginButton.setVisibility(View.VISIBLE);
+            logoutButton.setVisibility(View.VISIBLE);
 
         } else {
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
@@ -364,6 +340,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
 
             case R.id.sign_in_button:
                 signIn();
+
                 break;
         }
 
@@ -378,24 +355,21 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-            Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+            Log.d(LOGTAG, "firebaseAuthWithGoogle:" + acct.getId());
 
             AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
             mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                       @Override
                       public void onComplete(@NonNull Task<AuthResult> task) {
-                            Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                            Log.d(LOGTAG, "signInWithCredential:onComplete:" + task.isSuccessful());
 
-                            // If sign in fails, display a message to the user. If sign in succeeds
-                            // the auth state listener will be notified and logic to handle the
-                            // signed in user can be handled in the listener.
                             if (!task.isSuccessful()) {
-                                  Log.w(TAG, "signInWithCredential", task.getException());
+                                  Log.w(LOGTAG, "signInWithCredential", task.getException());
                                   Toast.makeText(StartActivity.this, "Authentication failed.",
                                               Toast.LENGTH_SHORT).show();
                                 }
-                            // ...
+
                           }
                 });
     }

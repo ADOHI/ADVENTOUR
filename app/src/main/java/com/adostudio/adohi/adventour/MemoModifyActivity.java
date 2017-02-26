@@ -19,20 +19,22 @@ import butterknife.OnClick;
 
 public class MemoModifyActivity extends AppCompatActivity {
 
+    private static final String LOGTAG = "MemoModifyActivity";
+
     private String uid;
-    private DatabaseReference mDatabase;
+    private DatabaseReference appDatabase;
     @BindView(R.id.et_save_memo)EditText saveMemoEditText;
     @BindView(R.id.bt_save_memo)Button saveMemoButton;
     @OnClick(R.id.bt_save_memo)void saveMemoClick() {
 
-        mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get user value
                         User user = dataSnapshot.getValue(User.class);
-                        user.memo = saveMemoEditText.getText().toString();
-                        mDatabase.child("users").child(uid).child("memo").setValue(user.memo);
+                        user.setMemo(saveMemoEditText.getText().toString());
+                        appDatabase.child("users").child(uid).setValue(user);
                         finish();
                     }
                     @Override
@@ -52,6 +54,6 @@ public class MemoModifyActivity extends AppCompatActivity {
             saveMemoEditText.setText(intent.getExtras().getString("memo"));
         }
         uid = intent.getExtras().getString("uid");
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        appDatabase = FirebaseDatabase.getInstance().getReference();
     }
 }

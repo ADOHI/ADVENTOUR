@@ -12,17 +12,17 @@ import java.io.Serializable;
  */
 public class Quest{
 
-    public Sticker reward;
-    public String fromUid;
-    public String fromName;
-    public String fromImageUrl;
-    public String toUid;
-    public String toName;
-    public String toImageUrl;
-    public String locationName;
-    public String locationHint;
-    public double locationLng;
-    public double locationLat;
+    private Sticker reward;
+    private String fromUid;
+    private String fromName;
+    private String fromImageUrl;
+    private String toUid;
+    private String toName;
+    private String toImageUrl;
+    private String locationName;
+    private String locationHint;
+    private double locationLng;
+    private double locationLat;
 
     public Quest() {}
     public Quest(Sticker reward, String fromUid, String fromName, String fromImageUrl, String toUid,
@@ -41,4 +41,91 @@ public class Quest{
         this.locationLat = locationLat;
     }
 
+    public Sticker getReward() {
+        return reward;
+    }
+
+    public void setReward(Sticker reward) {
+        this.reward = reward;
+    }
+
+    public String getFromUid() {
+        return fromUid;
+    }
+
+    public void setFromUid(String fromUid) {
+        this.fromUid = fromUid;
+    }
+
+    public String getFromName() {
+        return fromName;
+    }
+
+    public void setFromName(String fromName) {
+        this.fromName = fromName;
+    }
+
+    public String getFromImageUrl() {
+        return fromImageUrl;
+    }
+
+    public void setFromImageUrl(String fromImageUrl) {
+        this.fromImageUrl = fromImageUrl;
+    }
+
+    public String getToUid() {
+        return toUid;
+    }
+
+    public void setToUid(String toUid) {
+        this.toUid = toUid;
+    }
+
+    public String getToName() {
+        return toName;
+    }
+
+    public void setToName(String toName) {
+        this.toName = toName;
+    }
+
+    public String getToImageUrl() {
+        return toImageUrl;
+    }
+
+    public void setToImageUrl(String toImageUrl) {
+        this.toImageUrl = toImageUrl;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationHint() {
+        return locationHint;
+    }
+
+    public void setLocationHint(String locationHint) {
+        this.locationHint = locationHint;
+    }
+
+    public double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(double locationLat) {
+        this.locationLat = locationLat;
+    }
 }

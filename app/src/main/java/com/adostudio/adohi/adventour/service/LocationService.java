@@ -29,130 +29,126 @@ import java.util.Date;
  */
 
 public class LocationService extends Service{
-    public LocationService(){
-        }
-    public static NMapLocationManager mapLocationManager;
-    private DatabaseReference mDatabase;
+
+    public LocationService(){}
+
+    private static final String LOGTAG = "LocationService";
+    private static final int ACHIEVEMENT_GET_DISTANCE = 3000;
+    private static NMapLocationManager mapLocationManager;
+    private DatabaseReference appDatabase;
     private String uid;
-    private MyApplication myApplication;
-    public static double currentLng;
-    public static double currentLat;
+
     private final NMapLocationManager.OnLocationChangeListener onMyLocationChangeListener = new NMapLocationManager.OnLocationChangeListener() {
 
         @Override
         public boolean onLocationChanged(NMapLocationManager locationManager, final NGeoPoint myLocation) {
             try {
-                myApplication.setCurrentLng(myLocation.getLongitude());
-                myApplication.setCurrentLat(myLocation.getLatitude());
-                mDatabase.child("users").child(uid).runTransaction(new Transaction.Handler() {
+
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    uid = user.getUid();
+                } else {
+                    Log.d(LOGTAG, "user unsigned");
+                }
+
+                MyApplication.setCurrentLng(myLocation.getLongitude());
+                MyApplication.setCurrentLat(myLocation.getLatitude());
+                appDatabase.child("users").child(uid).runTransaction(new Transaction.Handler() {
                     @Override
                     public Transaction.Result doTransaction(MutableData mutableData) {
 
                         User user = mutableData.getValue(User.class);
                         int index = 0;
-                        Location location1 = new Location(LocationManager.GPS_PROVIDER);
-                        location1.setLongitude(myLocation.getLongitude());
-                        location1.setLatitude(myLocation.getLatitude());
+                        Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
+                        currentLocation.setLongitude(myLocation.getLongitude());
+                        currentLocation.setLatitude(myLocation.getLatitude());
 
-                        for (Achievement a : user.bookmarkList) {
-                            Location location2 = new Location(LocationManager.GPS_PROVIDER);
-                            location2.setLongitude(a.lng);
-                            location2.setLatitude(a.lat);
-                            int distance = (int) location1.distanceTo(location2);
+                        for (Achievement a : user.getBookmarkList()) {
+                            Location bookmarkLocation = new Location(LocationManager.GPS_PROVIDER);
+                            bookmarkLocation.setLongitude(a.getLng());
+                            bookmarkLocation.setLatitude(a.getLat());
+                            int distance = (int) currentLocation.distanceTo(bookmarkLocation);
                             Log.d("distance", "" + distance);
                             Date date = new Date(System.currentTimeMillis());
                             SimpleDateFormat dateFormat = new  SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
-                            String strDate = dateFormat.format(date);
-                            Achievement achievement = new Achievement(a.contentId, a.contentTypeId, a.overview, a.title, a.address,
-                                    a.phonecall, a.homepage, strDate, a.lng, a.lat, a.imageUrl, distance);
-                            if (distance < 3000) {
-                                user.achievementList.add(0, achievement);
-                                user.removeBookmark(a.contentId);
+                            String currentDate = dateFormat.format(date);
+
+                            if (distance < ACHIEVEMENT_GET_DISTANCE) {
+                                Achievement achievement = a;
+                                achievement.setTime(currentDate);
+                                achievement.setDistance(distance);
+                                user.getAchievementList().add(0, achievement);
+                                user.removeBookmark(a.getContentId());
                                 Intent intent = new Intent(getApplicationContext(), GetAchivementActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra("imageurl", achievement.imageUrl);
-                                intent.putExtra("title", achievement.title);
-                                intent.putExtra("contentid", achievement.contentId);
+                                intent.putExtra("imageurl", achievement.getImageUrl());
+                                intent.putExtra("title", achievement.getTitle());
+                                intent.putExtra("contentid", achievement.getContentId());
                                 startActivity(intent);
                             }
                             else {
-                                a.distance = distance;
+                                a.setDistance(distance);
                             }
-                            mDatabase.child("users").child(uid).setValue(user);
+
                         }
 
-                        for (Achievement a : user.achievementList) {
-                            Location location2 = new Location(LocationManager.GPS_PROVIDER);
-                            location2.setLongitude(a.lng);
-                            location2.setLatitude(a.lat);
-                            int distance = (int) location1.distanceTo(location2);
-                            a.distance = distance;
+                        for (Achievement a : user.getAchievementList()) {
+                            Location achievementLocation = new Location(LocationManager.GPS_PROVIDER);
+                            achievementLocation.setLongitude(a.getLng());
+                            achievementLocation.setLatitude(a.getLat());
+                            int distance = (int) currentLocation.distanceTo(achievementLocation);
+                            a.setDistance(distance);
                         }
-
+                        appDatabase.child("users").child(uid).setValue(user);
                         return Transaction.success(mutableData);
 
                     }
 
-
                         @Override
                         public void onComplete(DatabaseError databaseError, boolean b,
                                                                   DataSnapshot dataSnapshot) {
-                              // Transaction complete
+                                  Log.d(LOGTAG, "update & getting achievement success");
                             }
                       });
 
             }catch (Exception ex) {
-
+                Log.d(LOGTAG, "checking distance falied");
             }
-
-
 
             return true;
         }
 
         @Override
         public void onLocationUpdateTimeout(NMapLocationManager locationManager) {
-
+            Log.d(LOGTAG, "location update timeout");
         }
 
         @Override
         public void onLocationUnavailableArea(NMapLocationManager locationManager, NGeoPoint myLocation) {
-
+            Log.d(LOGTAG, "location unavailableArea");
         }
     };
 
     @Override
     public void onCreate() {
         super.onCreate();
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+
         mapLocationManager = new NMapLocationManager(this);
         mapLocationManager.setOnLocationChangeListener(onMyLocationChangeListener);
         mapLocationManager.enableMyLocation(false);
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        } else {
-            // No user is signed in
-        }
-
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        myApplication = (MyApplication)getApplication();
         return super.onStartCommand(intent, flags, startId);
     }
-
-
-
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-
 
 }

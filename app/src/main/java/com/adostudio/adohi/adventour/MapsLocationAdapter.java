@@ -19,11 +19,14 @@ import java.util.ArrayList;
  * Created by ADOHI on 2017-02-13.
  */
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+public class MapsLocationAdapter extends RecyclerView.Adapter<MapsLocationAdapter.ViewHolder> {
+
+    private static final String LOGTAG = "MapsLocationAdapter";
+
     private ArrayList<Achievement> mAchievementDataset;
     private RequestManager mRequestManager;
     private static Activity activity;
-    public MyAdapter(Activity activity, ArrayList<Achievement> myAchievementDataset, RequestManager requestManager) {
+    public MapsLocationAdapter(Activity activity, ArrayList<Achievement> myAchievementDataset, RequestManager requestManager) {
         this.activity = activity;
         mAchievementDataset = myAchievementDataset;
         mRequestManager = requestManager;
@@ -60,6 +63,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             if(activity.getClass() == IssueLocationActivity.class){
                 MyApplication myapp = (MyApplication)activity.getApplication();
                 myapp.setIssueLocationName(achievementName);
+                QuestIssueActivity.locationName = achievementName;
                 activity.finish();
             } else {
                 int id = v.getId();
@@ -75,19 +79,16 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         }
     }
 
-    // Provide a suitable constructor (depends on the kind of dataset)
 
-
-    // Create new views (invoked by the layout manager)
     @Override
-    public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+    public MapsLocationAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                             int viewType) {
         // create a new view
-        View v = LayoutInflater.from(parent.getContext())
+        View achievementRowView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.achievement_row, parent, false);
         // set the view's size, margins, paddings and layout parameters
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        ViewHolder viewHolder = new ViewHolder(achievementRowView);
+        return viewHolder;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -95,28 +96,28 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get_button element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.achievementTitleTextView.setText(mAchievementDataset.get(position).title);
+        holder.achievementTitleTextView.setText(mAchievementDataset.get(position).getTitle());
         holder.achievementSumnailImageView.setImageResource(R.drawable.btn_green_pressed);
-        holder.achievementAddressTextView.setText(mAchievementDataset.get(position).address);
+        holder.achievementAddressTextView.setText(mAchievementDataset.get(position).getAddress());
 
-        if( mAchievementDataset.get(position).distance > 1000) {
-            String num = String.format("%.2f" , (mAchievementDataset.get(position).distance)/1000);
+        if( mAchievementDataset.get(position).getDistance() > 1000) {
+            String num = String.format("%.2f" , (mAchievementDataset.get(position).getDistance())/1000);
             holder.achievementDistanceTextView.setText(num+"km");
         } else {
-            holder.achievementDistanceTextView.setText(Integer.toString((int) mAchievementDataset.get(position).distance) + "m");
+            holder.achievementDistanceTextView.setText(Integer.toString((int) mAchievementDataset.get(position).getDistance()) + "m");
         }
         try{
-            mRequestManager.load(mAchievementDataset.get(position).imageUrl).into(holder.achievementSumnailImageView);
+            mRequestManager.load(mAchievementDataset.get(position).getImageUrl()).into(holder.achievementSumnailImageView);
             //holder.mainRowImageView.set
         }catch (Exception ex){
 
         }
-        holder.contentId = mAchievementDataset.get(position).contentId;
-        holder.contentTypeId = mAchievementDataset.get(position).contentTypeId;
-        holder.distance = mAchievementDataset.get(position).distance;
-        holder.mapX = mAchievementDataset.get(position).lng;
-        holder.mapY = mAchievementDataset.get(position).lat;
-        holder.achievementName = mAchievementDataset.get(position).title;
+        holder.contentId = mAchievementDataset.get(position).getContentId();
+        holder.contentTypeId = mAchievementDataset.get(position).getContentTypeId();
+        holder.distance = mAchievementDataset.get(position).getDistance();
+        holder.mapX = mAchievementDataset.get(position).getLng();
+        holder.mapY = mAchievementDataset.get(position).getLat();
+        holder.achievementName = mAchievementDataset.get(position).getTitle();
     }
 
     // Return the size of your dataset (invoked by the layout manager)

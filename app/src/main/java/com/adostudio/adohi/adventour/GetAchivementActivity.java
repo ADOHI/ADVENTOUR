@@ -27,8 +27,11 @@ import butterknife.OnClick;
 import tyrantgit.explosionfield.ExplosionField;
 
 public class GetAchivementActivity extends AppCompatActivity {
-    private RequestManager mGlideRequestManager;
-    private DatabaseReference mDatabase;
+
+    private static final String LOGTAG = "GetAchivementActivity";
+
+    private RequestManager glideRequestManager;
+    private DatabaseReference appDatabase;
     private String uid;
     private String exUid = "";
     private String contentId;
@@ -44,9 +47,9 @@ public class GetAchivementActivity extends AppCompatActivity {
     @OnClick(R.id.iv_get_chest)void chestClick(){
         index = (int) (Math.random() * 9);
         resid = index + R.drawable.tw1;
-        mGlideRequestManager.load(resid).into(getChestImageView);
+        glideRequestManager.load(resid).into(getChestImageView);
         getBoolean = true;
-        mGlideRequestManager.load(R.drawable.get).into(getKickImageView);
+        glideRequestManager.load(R.drawable.get).into(getKickImageView);
     }
     @BindView(R.id.tv_get_title)TextView getTitleTextView;
     @BindView(R.id.iv_get_photo)ImageView getPhotoImageView;
@@ -54,24 +57,27 @@ public class GetAchivementActivity extends AppCompatActivity {
     @BindView(R.id.iv_get_kick)ImageView getKickImageView;
     @OnClick(R.id.iv_get_kick)void kickClick(){
         if(!getBoolean) {
-            mDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
+            appDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Conquest conquest = new Conquest(contentId, uid, name, imageUrl);
-                            mDatabase.child("conquests").child(contentId).setValue(conquest);
+                            appDatabase.child("conquests").child(contentId).setValue(conquest);
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
                         }
                     });
-            mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            user.flagList.add(user.achievementList.get(0));
-                            mDatabase.child("users").child(uid).setValue(user);
+                            if(user.getFlagList().size()>0) {
+                                if (user.getFlagList().get(0) != user.getAchievementList().get(0))
+                                    user.addFlagList(user.getAchievementList().get(0));
+                            } else user.addFlagList(user.getAchievementList().get(0));
+                            appDatabase.child("users").child(uid).setValue(user);
                         }
 
                         @Override
@@ -79,13 +85,13 @@ public class GetAchivementActivity extends AppCompatActivity {
                         }
                     });
             if(exUid != ""){
-                mDatabase.child("users").child(exUid).addListenerForSingleValueEvent(
+                appDatabase.child("users").child(exUid).addListenerForSingleValueEvent(
                         new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
                                 user.removeFlag(contentId);
-                                mDatabase.child("users").child(exUid).setValue(user);
+                                appDatabase.child("users").child(exUid).setValue(user);
                             }
 
                             @Override
@@ -100,14 +106,14 @@ public class GetAchivementActivity extends AppCompatActivity {
             getFlagTextView.setVisibility(View.VISIBLE);
             getChestImageView.setVisibility(View.VISIBLE);
         } else {
-            mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
                             Sticker sticker = new Sticker("tw"+(index+1)+".jpg", resid);
-                            user.stickerList.add(sticker);
-                            mDatabase.child("users").child(uid).setValue(user);
+                            user.addStickerList(sticker);
+                            appDatabase.child("users").child(uid).setValue(user);
                         }
 
                         @Override
@@ -127,9 +133,9 @@ public class GetAchivementActivity extends AppCompatActivity {
         Intent intent = getIntent();
         contentId = intent.getExtras().getString("contentid");
         KenBurnsView kbv = (KenBurnsView) findViewById(R.id.kv_get);
-        mGlideRequestManager = Glide.with(this);
+        glideRequestManager = Glide.with(this);
         try{
-            mGlideRequestManager.load(intent.getExtras().getString("imageurl")).into(kbv);
+            glideRequestManager.load(intent.getExtras().getString("imageurl")).into(kbv);
         } catch (Exception ex){}
         getTitleTextView.setText(intent.getExtras().getString("title"));
 
@@ -142,17 +148,17 @@ public class GetAchivementActivity extends AppCompatActivity {
             // No user is signed in
         }
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+        appDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                        if(dataSnapshot.exists()){
                            Conquest conquest = dataSnapshot.getValue(Conquest.class);
-                           mGlideRequestManager.load(conquest.imageUrl).into(getPhotoImageView);
-                           getNameTextView.setText(conquest.name);
+                           glideRequestManager.load(conquest.getImageUrl()).into(getPhotoImageView);
+                           getNameTextView.setText(conquest.getName());
                            exUid = uid;
-                           if(conquest.uid == uid){
+                           if(conquest.getUid() == uid){
                                getKickImageView.setVisibility(View.INVISIBLE);
                            }
                        }

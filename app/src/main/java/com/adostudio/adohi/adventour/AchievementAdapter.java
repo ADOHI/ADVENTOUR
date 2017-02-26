@@ -12,22 +12,23 @@ import android.widget.TextView;
 import com.adostudio.adohi.adventour.db.Achievement;
 import com.bumptech.glide.RequestManager;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by ADOHI on 2017-02-13.
  */
 
 public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.ViewHolder> {
-    private ArrayList<Achievement> mAchievementDataset;
-    private RequestManager mRequestManager;
+
+    private static final String LOGTAG = "AcievementAdapter";
+
+    private ArrayList<Achievement> achievementDataset;
+    private RequestManager achievementRequestManager;
     private static Activity activity;
     public AchievementAdapter(Activity activity, ArrayList<Achievement> myAchievementDataset, RequestManager requestManager) {
         this.activity = activity;
-        mAchievementDataset = myAchievementDataset;
-        mRequestManager = requestManager;
+        achievementDataset = myAchievementDataset;
+        achievementRequestManager = requestManager;
     }
 
 
@@ -35,7 +36,7 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
 
         public TextView achievementTitleTextView;
         public TextView achievementAddressTextView;
-        public TextView achievementDistanceTextView;
+        public TextView achievementDateTextView;
         public ImageView achievementSumnailImageView;
         public String contentId;
         public String contentTypeId;
@@ -48,7 +49,7 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
             super(v);
             achievementTitleTextView = (TextView) v.findViewById(R.id.tv_achievement_title);
             achievementAddressTextView = (TextView) v.findViewById(R.id.tv_achievement_address);
-            achievementDistanceTextView = (TextView) v.findViewById(R.id.tv_achievement_distance);
+            achievementDateTextView = (TextView) v.findViewById(R.id.tv_achievement_distance);
             achievementSumnailImageView = (ImageView) v.findViewById(R.id.iv_achievement_sumnail);
             v.setOnClickListener(this);
 
@@ -76,11 +77,11 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
     public AchievementAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                             int viewType) {
         // create a new view
-        View v = LayoutInflater.from(parent.getContext())
+        View achievementRowView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.achievement_row, parent, false);
         // set the view's size, margins, paddings and layout parameters
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        ViewHolder achievementViewHolder = new ViewHolder(achievementRowView);
+        return achievementViewHolder;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -88,28 +89,27 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get_button element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.achievementTitleTextView.setText(mAchievementDataset.get(position).title);
-        holder.achievementSumnailImageView.setImageResource(R.drawable.btn_green_pressed);
-        holder.achievementAddressTextView.setText(mAchievementDataset.get(position).address);
-        holder.achievementDistanceTextView.setText(mAchievementDataset.get(position).time);
+        holder.achievementTitleTextView.setText(achievementDataset.get(position).getTitle());
+        holder.achievementAddressTextView.setText(achievementDataset.get(position).getAddress());
+        holder.achievementDateTextView.setText(achievementDataset.get(position).getTime());
 
         try{
-            mRequestManager.load(mAchievementDataset.get(position).imageUrl).into(holder.achievementSumnailImageView);
+            achievementRequestManager.load(achievementDataset.get(position).getImageUrl()).into(holder.achievementSumnailImageView);
             //holder.mainRowImageView.set
         }catch (Exception ex){
 
         }
-        holder.contentId = mAchievementDataset.get(position).contentId;
-        holder.contentTypeId = mAchievementDataset.get(position).contentTypeId;
-        holder.distance = mAchievementDataset.get(position).distance;
-        holder.mapX = mAchievementDataset.get(position).lng;
-        holder.mapY = mAchievementDataset.get(position).lat;
+        holder.contentId = achievementDataset.get(position).getContentId();
+        holder.contentTypeId = achievementDataset.get(position).getContentTypeId();
+        holder.distance = achievementDataset.get(position).getDistance();
+        holder.mapX = achievementDataset.get(position).getLng();
+        holder.mapY = achievementDataset.get(position).getLat();
 
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mAchievementDataset.size();
+        return achievementDataset.size();
     }
 }

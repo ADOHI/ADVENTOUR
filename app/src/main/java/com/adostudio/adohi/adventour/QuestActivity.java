@@ -5,13 +5,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Sticker;
 import com.adostudio.adohi.adventour.db.User;
-import com.adostudio.adohi.adventour.userdefinedtargets.UserDefinedTargets;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.google.firebase.database.DataSnapshot;
@@ -21,7 +19,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,22 +26,22 @@ import butterknife.OnClick;
 
 public class QuestActivity extends AppCompatActivity {
 
-    private DatabaseReference mDatabase;
+    private static final String LOGTAG = "QuestActivity";
+
+    private DatabaseReference appDatabase;
     private String uid;
-    private RequestManager mGlideRequestManager;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private RequestManager glideRequestManager;
+    private RecyclerView.Adapter stickerAdapter;
+    private RecyclerView.LayoutManager stickerLayoutManager;
     private ArrayList<Sticker> stickerArrayList;
 
-    private MyApplication myApplication;
-
-    @BindView(R.id.rv_sticker_list)RecyclerView mRecyclerView;
+    @BindView(R.id.rv_sticker_list)RecyclerView stickerRecyclerView;
     @BindView(R.id.iv_quest_camera)ImageView questCameraImageView;
     @OnClick(R.id.iv_quest_camera)void questCameraClick() {
 
         Intent intent = new Intent(this, QuestIssueActivity.class);
         intent.putExtra("issue", true);
-        intent.putExtra("position", myApplication.getStickerPosition());
+        intent.putExtra("position", MyApplication.getStickerPosition());
         startActivity(intent);
     }
     @BindView(R.id.iv_quest_quest)ImageView questImageView;
@@ -58,40 +55,41 @@ public class QuestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest);
         ButterKnife.bind(this);
-        myApplication = (MyApplication) getApplication();
         Intent intent = getIntent();
         uid = intent.getExtras().getString("uid");
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        appDatabase = FirebaseDatabase.getInstance().getReference();
 
-        mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(uid).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        stickerArrayList.clear();
                         User user = dataSnapshot.getValue(User.class);
-                        stickerArrayList.addAll(user.stickerList);
-                        mAdapter.notifyDataSetChanged();
-                        Log.d("aaaa", stickerArrayList.size() + " " + user.stickerList.size() + " ");
+                        stickerArrayList.addAll(user.getStickerList());
+                        stickerAdapter.notifyDataSetChanged();
+
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
+
                 });
 
         stickerArrayList = new ArrayList<>();
-        mGlideRequestManager = Glide.with(this);
-        mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new StickerAdapter(this, stickerArrayList, mGlideRequestManager);
-        mRecyclerView.setAdapter(mAdapter);
+        glideRequestManager = Glide.with(this);
+        stickerRecyclerView.setHasFixedSize(true);
+        stickerLayoutManager = new LinearLayoutManager(this);
+        stickerRecyclerView.setLayoutManager(stickerLayoutManager);
+        stickerAdapter = new StickerAdapter(this, stickerArrayList, glideRequestManager);
+        stickerRecyclerView.setAdapter(stickerAdapter);
 
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        myApplication.setStickerPosition(-1);
+        MyApplication.setStickerPosition(-1);
     }
 }

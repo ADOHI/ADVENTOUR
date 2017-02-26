@@ -2,8 +2,6 @@ package com.adostudio.adohi.adventour;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,28 +9,27 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Quest;
-import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by ADOHI on 2017-02-13.
  */
 
 public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.ViewHolder> {
+
+    private static final String LOGTAG = "QuestAdapter";
+
     private ArrayList<Quest> questDataset;
-    private RequestManager mRequestManager;
+    private RequestManager glideRequestManager;
     private static Activity activity;
 
     public QuestAdapter(Activity activity, ArrayList<Quest> myQuestDataset, RequestManager requestManager) {
         this.activity = activity;
         this.questDataset = myQuestDataset;
-        this.mRequestManager = requestManager;
+        this.glideRequestManager = requestManager;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
@@ -79,11 +76,11 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.fromTextView.setText(questDataset.get(position).fromName);
-        holder.hintTextView.setText(questDataset.get(position).locationHint);
-        holder.locationTextView.setText(questDataset.get(position).locationName);
-        mRequestManager.load(questDataset.get(position).fromImageUrl).into(holder.fromSumnailmageView);
-        mRequestManager.load(questDataset.get(position).reward.resId).into(holder.rewardlmageView);
+        holder.fromTextView.setText(questDataset.get(position).getFromName());
+        holder.hintTextView.setText(questDataset.get(position).getLocationHint());
+        holder.locationTextView.setText(questDataset.get(position).getLocationName());
+        glideRequestManager.load(questDataset.get(position).getFromImageUrl()).into(holder.fromSumnailmageView);
+        glideRequestManager.load(questDataset.get(position).getReward().getResId()).into(holder.rewardlmageView);
         holder.position = position;
     }
 

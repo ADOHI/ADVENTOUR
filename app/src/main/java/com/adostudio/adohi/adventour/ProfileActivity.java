@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,15 +32,18 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ProfileActivity extends AppCompatActivity {
-    private String uid;
+
+    private static final String LOGTAG = "ProfileActivity";
+
+    private String friendUid;
     private String myUid;
     private String memo = null;
     private int add;
     private boolean mine;
-    private RequestManager mGlideRequestManager;
-    private DatabaseReference mDatabase;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private RequestManager glideRequestManager;
+    private DatabaseReference appDatabase;
+    private RecyclerView.Adapter latelyAchievementAdapter;
+    private RecyclerView.LayoutManager latelyAchievementLayoutManager;
     private ArrayList<Achievement> latelyAchievementList;
     @BindView(R.id.sv_profile)ScrollView profileScrollView;
     @BindView(R.id.rv_profile_achievement)RecyclerView mRecyclerView;
@@ -66,30 +70,25 @@ public class ProfileActivity extends AppCompatActivity {
     @OnClick(R.id.ll_profile_memo)void memoModifyClick() {
         if(mine) {
             Intent intent = new Intent(this, MemoModifyActivity.class);
-            intent.putExtra("memo", memo);
-            intent.putExtra("uid", uid);
-            intent.putExtra("mine", mine);
+            intent.putExtra("uid", myUid);
             startActivity(intent);
         }
     }
     @BindView(R.id.fab_profile_add)FloatingActionButton addFAB;
     @OnClick(R.id.fab_profile_add)void addFABClick(){
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            myUid = user.getUid();
-        }
-        mDatabase.child("users").child(myUid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(myUid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
+
                         User user = dataSnapshot.getValue(User.class);
-                        user.friendList.add(uid);
-                        mDatabase.child("users").child(myUid).setValue(user);
+                        user.addFriendList(friendUid);
+                        appDatabase.child("users").child(myUid).child("friendList").setValue(user.getFriendList());
                     }
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        Log.d(LOGTAG, "database error = " + databaseError);
                     }
                 });
         addFAB.setVisibility(View.GONE);
@@ -98,20 +97,18 @@ public class ProfileActivity extends AppCompatActivity {
     @BindView(R.id.fab_profile_delete)FloatingActionButton deleteFAB;
     @OnClick(R.id.fab_profile_delete)void deleteFABClick(){
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            myUid = user.getUid();
-        }
-        mDatabase.child("users").child(myUid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(myUid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         User user = dataSnapshot.getValue(User.class);
-                        user.friendList.remove(uid);
-                        mDatabase.child("users").child(myUid).setValue(user);
+                        user.removeFriendList(friendUid);
+                        appDatabase.child("users").child(myUid).child("friendList").setValue(user.getFriendList());
                     }
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        Log.d(LOGTAG, "database error : " + databaseError);
+
                     }
                 });
         deleteFAB.setVisibility(View.GONE);
@@ -123,54 +120,67 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
         Intent intent = getIntent();
-        uid = intent.getExtras().getString("uid");
+        friendUid = intent.getExtras().getString("frienduid");
         mine = intent.getExtras().getBoolean("mine");
         add = intent.getExtras().getInt("add");
         if(add == 1) addFAB.setVisibility(View.VISIBLE);
         else if(add == 2) deleteFAB.setVisibility(View.VISIBLE);
         if(!mine) modifyMemoTextView.setVisibility(View.GONE);
-        mGlideRequestManager = Glide.with(this);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        glideRequestManager = Glide.with(this);
 
-        mDatabase.child("users").child(uid).addValueEventListener(
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            myUid = user.getUid();
+        } else {
+            Log.d(LOGTAG, "user unsigned");
+        }
+
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+
+        String uid;
+
+        if(mine)uid = myUid;
+        else uid = friendUid;
+        appDatabase.child("users").child(uid).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
+
                         latelyAchievementList.clear();
                         User user = dataSnapshot.getValue(User.class);
-                        profileNameTextView.setText(user.userName);
-                        mGlideRequestManager.load(user.photoUrl).into(profilePictureImageView);
+                        profileNameTextView.setText(user.getUserName());
+                        glideRequestManager.load(user.getPhotoUrl()).into(profilePictureImageView);
                         try{
-                            mGlideRequestManager.load(user.achievementList.get(0).imageUrl).into(profileLastImageView);
+                            glideRequestManager.load(user.getAchievementList().get(0).getImageUrl()).into(profileLastImageView);
                         } catch (Exception ex) {
-                            mGlideRequestManager.load("https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg").into(profileLastImageView);
+                            glideRequestManager.load(R.string.default_image).into(profileLastImageView);
                         }
-                        if(user.memo != "") {
-                            memo = user.memo;
+                        if(!user.getMemo().equals("")) {
+                            memo = user.getMemo();
                             profileMemoTextView.setText(memo);
-                        }
-                        profileScoreTextView.setText(user.achievementList.size() + "");
-                        profileFlagTextView.setText(user.flagList.size() + "");
+                        } else profileMemoTextView.setText(getString(R.string.intro_default));
+                        profileScoreTextView.setText(user.getAchievementList().size() + "");
+                        profileFlagTextView.setText(user.getFlagList().size() + "");
 
-                        latelyAchievementList.addAll(user.achievementList);
-                        mAdapter.notifyDataSetChanged();
+                        latelyAchievementList.addAll(user.getAchievementList());
+                        latelyAchievementAdapter.notifyDataSetChanged();
                         profileScrollView.scrollTo(0,0);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        Log.d(LOGTAG, "database error : " + databaseError);
 
                     }
                 });
 
         latelyAchievementList = new ArrayList<>();
-        mGlideRequestManager = Glide.with(this);
+        glideRequestManager = Glide.with(this);
         mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new AchievementAdapter(this, latelyAchievementList, mGlideRequestManager);
-        mRecyclerView.setAdapter(mAdapter);
+        latelyAchievementLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(latelyAchievementLayoutManager);
+        latelyAchievementAdapter = new AchievementAdapter(this, latelyAchievementList, glideRequestManager);
+        mRecyclerView.setAdapter(latelyAchievementAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
         profileScrollView.scrollTo(0,0);
     }

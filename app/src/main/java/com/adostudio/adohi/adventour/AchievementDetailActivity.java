@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationManager;
-import android.media.Image;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -54,13 +52,15 @@ import butterknife.OnClick;
 
 public class AchievementDetailActivity extends AppCompatActivity {
 
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private static final String LOGTAG = "AchieveDetailActivity";
+
+    private RecyclerView.Adapter reviewAdapter;
+    private RecyclerView.LayoutManager reviewLayoutManager;
     private ArrayList<Review> reviewList;
     @BindView(R.id.rv_review)RecyclerView reviewRecyclerView;
-    private Document doc = null;
-    private RequestManager mGlideRequestManager;
-    private DatabaseReference mDatabase;
+    private Document parsingDocument = null;
+    private RequestManager glideRequestManager;
+    private DatabaseReference appDatabase;
     private Location bookmarkLocation;
     private String bookmarkContentId;
     private String bookmarkContentTypeId;
@@ -96,39 +96,37 @@ public class AchievementDetailActivity extends AppCompatActivity {
     }
     @BindView(R.id.tv_conquest_name)TextView conquestNameTextView;
     @OnClick(R.id.iv_detail_bookmark)void BookmarkButtonClick(){
-        mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                   @Override
                   public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
+
                       User user = dataSnapshot.getValue(User.class);
-                      Log.d("testttt", "" + user.bookmarkList.size());
                       Achievement achievement = new Achievement(bookmarkContentId, bookmarkContentTypeId, bookmarkOverview, bookmarkTitle,
                               bookmarkAddress, bookmarkPhonecall, bookmarkHomepage, "", bookmarkLocation.getLongitude(),
                               bookmarkLocation.getLatitude(), bookmarkImageUrl, bookmarkDistance);
                       if(user.checkBookmarkId(bookmarkContentId)){
                           detailBookmarkImageView.setImageResource(R.drawable.bookmark_off);
-                          user.removeBookmark(achievement.contentId);
-                          mDatabase.child("users").child(uid).child("bookmarkList").setValue(user.bookmarkList);
+                          user.removeBookmark(achievement.getContentId());
+                          appDatabase.child("users").child(uid).setValue(user);
                       } else{
-                          if(user.bookmarkList.size() < 3){
+                          if(user.getBookmarkList().size() < 3){
                               detailBookmarkImageView.setImageResource(R.drawable.bookmark_on);
-                              user.bookmarkList.add(0, achievement);
-                              mDatabase.child("users").child(uid).child("bookmarkList").setValue(user.bookmarkList);
+                              user.addBookmarkList(achievement);
+                              appDatabase.child("users").child(uid).setValue(user);
                           } else{
                               Toast.makeText(AchievementDetailActivity.this, "북마크 리스트가 가득 찼습니다",
                                       Toast.LENGTH_SHORT).show();
                           }
                       }
 
-                        // ...
                   }
 
                   @Override
                   public void onCancelled(DatabaseError databaseError) {
-
-                      }
-                });
+                            Log.d(LOGTAG, "database error : " + databaseError);
+                        }
+                    });
     }
 
     @BindView(R.id.fab_review)FloatingActionButton reviewAddFAB;
@@ -148,17 +146,19 @@ public class AchievementDetailActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             uid = user.getUid();
+        } else {
+            Log.d(LOGTAG, "user unsigned");
         }
         
         
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mGlideRequestManager = Glide.with(this);
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+        glideRequestManager = Glide.with(this);
         Intent intent = getIntent();
         bookmarkContentId = intent.getExtras().getString("contentid");
         bookmarkLocation = new Location(LocationManager.GPS_PROVIDER);
         bookmarkLocation.setLongitude(intent.getExtras().getDouble("mapx"));
         bookmarkLocation.setLatitude(intent.getExtras().getDouble("mapy"));
-        mDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -176,33 +176,31 @@ public class AchievementDetailActivity extends AppCompatActivity {
                             detailTrophyTextView.setText("획득");
                             reviewAddFAB.setVisibility(View.VISIBLE);
                         }
-                        // ...
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error : " + databaseError);
                     }
                 });
 
-        mDatabase.child("conquests").child(bookmarkContentId).addListenerForSingleValueEvent(
+        appDatabase.child("conquests").child(bookmarkContentId).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
+
                         if(dataSnapshot.exists()){
                             Conquest conquest = dataSnapshot.getValue(Conquest.class);
-                            conquestNameTextView.setText(conquest.name);
-                            mGlideRequestManager.load(conquest.imageUrl).into(conquestSumnailImageView);
-                            conquestUid = conquest.uid;
+                            conquestNameTextView.setText(conquest.getName());
+                            glideRequestManager.load(conquest.getImageUrl()).into(conquestSumnailImageView);
+                            conquestUid = conquest.getUid();
                         }
 
-                        // ...
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error : " + databaseError);
                     }
                 });
 
@@ -215,20 +213,22 @@ public class AchievementDetailActivity extends AppCompatActivity {
             detailDistanceTextView.setText((int)bookmarkDistance+"m");
         }
 
-        StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon");
-        urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
-        urlBuilder.append("&contentTypeId=");
-        urlBuilder.append("&contentId" + "=" + intent.getExtras().getString("contentid"));
-        urlBuilder.append("&MobileOS=AND&MobileApp=TourAPI3.0_Guide&defaultYN=Y&firstImageYN=Y&areacodeYN=Y&catcodeYN=Y&addrinfoYN=Y&mapinfoYN=Y&overviewYN=Y&transGuideYN=Y");
+        StringBuilder urlBuilder = new StringBuilder(getString(R.string.tour_id_search_first));
+        urlBuilder.append(getString(R.string.tour_api_key));
+        urlBuilder.append(getString(R.string.tour_id_search_second));
+        urlBuilder.append(intent.getExtras().getString("contentid"));
+        urlBuilder.append(getString(R.string.tour_id_search_third));
         GetXMLTask getXMLTask= new GetXMLTask();
         getXMLTask.execute(urlBuilder.toString());
+        Log.d(LOGTAG, urlBuilder.toString());
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("loaction");
+
         final BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d("whyyyyy", "dhoooo");
+
                 Location location = new Location(LocationManager.GPS_PROVIDER);
                 location.setLongitude(intent.getExtras().getDouble("mapx"));
                 location.setLatitude(intent.getExtras().getDouble("mapy"));
@@ -245,7 +245,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
         registerReceiver(receiver,intentFilter);
 
 
-        mDatabase.child("reviews").child(bookmarkContentId).addValueEventListener(
+        appDatabase.child("reviews").child(bookmarkContentId).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -253,9 +253,9 @@ public class AchievementDetailActivity extends AppCompatActivity {
                         if(dataSnapshot.exists()) {
                             reviewList.clear();
                             ReviewAchievement reviewAchievement = dataSnapshot.getValue(ReviewAchievement.class);
-                            reviewList.addAll(reviewAchievement.reviews);
-                            mAdapter.notifyDataSetChanged();
-                            String score = String.format("%.1f" , reviewAchievement.stars);
+                            reviewList.addAll(reviewAchievement.getReviews());
+                            reviewAdapter.notifyDataSetChanged();
+                            String score = String.format("%.1f" , reviewAchievement.getStars());
                             scoreTextView.setText(score);
                             reviewCountTextView.setText(reviewList.size()+"");
                         }
@@ -263,17 +263,17 @@ public class AchievementDetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error = " + databaseError);
                     }
                 });
 
         reviewList = new ArrayList<>();
-        mGlideRequestManager = Glide.with(this);
+        glideRequestManager = Glide.with(this);
         reviewRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
-        reviewRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new ReviewAdapter(this, reviewList, mGlideRequestManager);
-        reviewRecyclerView.setAdapter(mAdapter);
+        reviewLayoutManager = new LinearLayoutManager(this);
+        reviewRecyclerView.setLayoutManager(reviewLayoutManager);
+        reviewAdapter = new ReviewAdapter(this, reviewList, glideRequestManager);
+        reviewRecyclerView.setAdapter(reviewAdapter);
         reviewRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
     }
@@ -284,24 +284,21 @@ public class AchievementDetailActivity extends AppCompatActivity {
             URL url;
             try {
                 url = new URL(urls[0]);
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder(); //XML문서 빌더 객체를 생성
-                doc = db.parse(new InputSource(url.openStream())); //XML문서를 파싱한다.
-                doc.getDocumentElement().normalize();
+                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                parsingDocument = documentBuilder.parse(new InputSource(url.openStream()));
+                parsingDocument.getDocumentElement().normalize();
 
-            } catch (Exception e) {
-                Toast.makeText(getBaseContext(), "Parsing Error", Toast.LENGTH_SHORT).show();
+            } catch (Exception ex) {
+                Log.d(LOGTAG, "parsing error");
             }
-            return doc;
+            return parsingDocument;
         }
 
         @Override
-        protected void onPostExecute(Document doc) {
+        protected void onPostExecute(Document document) {
 
-            String s = "";
-            //data태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
-            NodeList nodeList = doc.getElementsByTagName("item");
-            //data 태그를 가지는 노드를 찾음, 계층적인 노드 구조를 반환
+            NodeList nodeList = document.getElementsByTagName("item");
             bookmarkContentTypeId = null;
             bookmarkOverview = null;
             bookmarkTitle = null;
@@ -311,20 +308,22 @@ public class AchievementDetailActivity extends AppCompatActivity {
             bookmarkImageUrl = null;
             for(int i = 0; i< nodeList.getLength(); i++){
 
-                Node node = nodeList.item(i); //data엘리먼트 노드
-                Element fstElmnt = (Element) node;
-                NodeList contentTypeId = fstElmnt.getElementsByTagName("contenttypeid");
+                Node node = nodeList.item(i);
+                Element firstElement = (Element) node;
+
+                NodeList contentTypeId = firstElement.getElementsByTagName("contenttypeid");
                 bookmarkContentTypeId = contentTypeId.item(0).getChildNodes().item(0).getNodeValue();
-                NodeList title = fstElmnt.getElementsByTagName("title");
+
+                NodeList title = firstElement.getElementsByTagName("title");
                 bookmarkTitle = title.item(0).getChildNodes().item(0).getNodeValue();
                 detailTitleTextView.setText(bookmarkTitle);
 
-                NodeList overView = fstElmnt.getElementsByTagName("overview");
+                NodeList overView = firstElement.getElementsByTagName("overview");
                 bookmarkOverview = (overView.item(0).getChildNodes().item(0).getNodeValue().replaceAll("<br>", "").replaceAll("<br />", "\n"));
                 introTextView.setText(bookmarkOverview);
 
                 try {
-                    NodeList address = fstElmnt.getElementsByTagName("addr1");
+                    NodeList address = firstElement.getElementsByTagName("addr1");
                     bookmarkAddress = address.item(0).getChildNodes().item(0).getNodeValue();
                     detailLocationTextView.setText(bookmarkAddress);
                     detailLocationImageView.setImageResource(R.drawable.location);
@@ -333,7 +332,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
                 }
 
                 try {
-                    NodeList tel = fstElmnt.getElementsByTagName("tel");
+                    NodeList tel = firstElement.getElementsByTagName("tel");
                     bookmarkPhonecall = tel.item(0).getChildNodes().item(0).getNodeValue();
                     detailPhoneCallTextView.setText(bookmarkPhonecall);
                     detailPhoneCallImageView.setImageResource(R.drawable.phone_call);
@@ -342,7 +341,7 @@ public class AchievementDetailActivity extends AppCompatActivity {
                 }
 
                 try {
-                    NodeList homepage = fstElmnt.getElementsByTagName("homepage");
+                    NodeList homepage = firstElement.getElementsByTagName("homepage");
                     String homepageString = homepage.item(0).getChildNodes().item(0).getNodeValue();
                     java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"(.+?)\"");
                     java.util.regex.Matcher matcher = pattern.matcher(homepageString);
@@ -357,24 +356,16 @@ public class AchievementDetailActivity extends AppCompatActivity {
                 }
 
                 try{
-                    NodeList sumnail = fstElmnt.getElementsByTagName("firstimage");
+                    NodeList sumnail = firstElement.getElementsByTagName("firstimage");
                     bookmarkImageUrl = sumnail.item(0).getChildNodes().item(0).getNodeValue();
-                    mGlideRequestManager.load(bookmarkImageUrl).into(detailAchievementImageView);
-                    //holder.mainRowImageView.set
+                    glideRequestManager.load(bookmarkImageUrl).into(detailAchievementImageView);
                 }catch (Exception ex){
 
                 }
 
-                try {
-                } catch (Exception ex) {
-                    Log.d("isok", "imagenull");
-                }
-
             }
-            super.onPostExecute(doc);
+            super.onPostExecute(document);
         }
 
-
-    }//end inner class - GetXMLTask
-
+    }
 }

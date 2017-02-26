@@ -65,7 +65,7 @@
                     android:layout_marginBottom="40dp"/>
 
                 <TextView
-                    android:text="aaa"
+                    android:text="name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tv_profile_name"
@@ -140,7 +140,7 @@
                 android:id="@+id/ll_profile_memo">
 
                 <TextView
-                    android:text="소개 해 주세요"
+                    android:text="@string/intro_default"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/tv_profile_memo"

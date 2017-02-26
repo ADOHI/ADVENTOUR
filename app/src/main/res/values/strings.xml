@@ -3,11 +3,29 @@
     <string name="title_activity_first">FirstActivity</string>
     <string name="font">font_third.jpg</string>
 
+    <string name="tour_api_key">JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D</string>
+    <string name="tour_id_search_first">http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon?ServiceKey=</string>
+    <string name="tour_id_search_second">&amp;contentTypeId=&amp;contentId=</string>
+    <string name="tour_id_search_third">&amp;MobileOS=AND&amp;MobileApp=TourAPI3.0_Guide&amp;defaultYN=Y&amp;firstImageYN=Y&amp;areacodeYN=Y&amp;catcodeYN=Y&amp;addrinfoYN=Y&amp;mapinfoYN=Y&amp;overviewYN=Y&amp;transGuideYN=Y</string>
+
+    <string name="tour_location_search_first">http://api.visitkorea.or.kr/openapi/service/rest/KorService/locationBasedList?ServiceKey=</string>
+    <string name="tour_location_search_second">&amp;contentTypeId=&amp;mapX=</string>
+    <string name="tour_location_search_third">&amp;mapY=</string>
+    <string name="tour_location_search_fourth">&amp;radius=</string>
+    <string name="tour_location_search_fifth">&amp;listYN=Y&amp;MobileOS=AND&amp;MobileApp=TourAPI3.0_Guide&amp;arrange=E&amp;numOfRows=999&amp;pageNo=1</string>
+
+    <string name="tour_keyword_search_first">http://api.visitkorea.or.kr/openapi/service/rest/KorService/searchKeyword?ServiceKey=</string>
+    <string name="tour_keyword_search_second">&amp;keyword=</string>
+    <string name="tour_keyword_search_third">&amp;areaCode=&amp;sigunguCode=&amp;cat1=&amp;cat2=&amp;cat3=&amp;listYN=Y&amp;MobileOS=AND&amp;MobileApp=TourAPI3.0_Guide&amp;arrange=B&amp;numOfRows=999&amp;pageNo=1</string>
+
     <string name="action_settings">Settings</string>
     <string name="str_done">완료</string>
+    <string name="newbie">뉴비는 늅늅하고 웁니다</string>
 
-    <string name="demo_parallax_description">Image of a cat</string>
-    <string name="demo_parallax_plus">+</string>
+    <string name="default_image">https://ilyricsbuzz.com/wp-content/uploads/2017/02/TWICEcoaster-LANE-2.jpg</string>
+    <string name="default_description">지금 당장 모험을 떠나세요</string>
+
+    <string name="intro_default">소갯말을 작성해 주세요</string>
 
     <string name="loading">로그인 중입니다</string>
     <string name="title_activity_maps">Map</string>

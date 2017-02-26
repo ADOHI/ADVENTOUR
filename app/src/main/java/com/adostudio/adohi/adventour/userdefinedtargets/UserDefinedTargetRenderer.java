@@ -48,7 +48,7 @@ public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, Sample
 {
 
     private static final String LOGTAG = "UDTRenderer";
-
+    private static final float TARGET_GET_ZOOM_IN = 100;
     private SampleApplicationSession vuforiaAppSession;
     private SampleAppRenderer mSampleAppRenderer;
 
@@ -170,7 +170,7 @@ public class UserDefinedTargetRenderer implements GLSurfaceView.Renderer, Sample
             Matrix.multiplyMM(modelViewProjection, 0, projectionMatrix, 0, modelViewMatrix, 0);
             Log.d("test","1   :" + modelViewMatrix[2] + "    " + modelViewMatrix[6] + "    " + modelViewMatrix[10] + "    " + modelViewMatrix[14] + "    ");
             //
-            if(modelViewMatrix[14] < 100) {
+            if(modelViewMatrix[14] < TARGET_GET_ZOOM_IN) {
                 Intent intent = new Intent(mActivity, GetStickerActivity.class);
                 intent.putExtra("questasset", mActivity.getQuestAsset());
                 intent.putExtra("questresid", mActivity.getQuestResId());

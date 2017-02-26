@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,7 +28,11 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ReviewActivity extends AppCompatActivity {
-    private int score = 3;
+
+    private static final String LOGTAG = "ReviewActivity";
+
+    private static final int DEFAULT_SCORE = 3;
+    private int score = DEFAULT_SCORE;
     private String uid;
     private String name;
     private String photoUrl;
@@ -104,29 +109,30 @@ public class ReviewActivity extends AppCompatActivity {
                         Review review = new Review(uid, name, photoUrl, reviewEditText.getText().toString(), strDate, score);
                         if(dataSnapshot.exists()) {
                             ReviewAchievement reviewAchievement = dataSnapshot.getValue(ReviewAchievement.class);
-                            reviewAchievement.reviews.add(0, review);
-                            reviewAchievement.contentId = contentId;
+                            reviewAchievement.addReviews(review);
+                            reviewAchievement.setContentId(contentId);
                             try {
-                                reviewAchievement.stars = (reviewAchievement.stars + score) / reviewAchievement.reviews.size();
+                                reviewAchievement.setStars((reviewAchievement.getStars() + score) / reviewAchievement.getReviews().size());
                             } catch (Exception ex) {
-                                reviewAchievement.stars = score;
+                                reviewAchievement.setStars(score);
                             }
                             mDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
                         } else {
                             ReviewAchievement reviewAchievement = new ReviewAchievement();
-                            reviewAchievement.stars = score;
-                            reviewAchievement.contentId = contentId;
-                            reviewAchievement.reviews.add(0, review);
+                            reviewAchievement.setStars(score);
+                            reviewAchievement.addReviews(review);
+                            reviewAchievement.setContentId(contentId);
                             mDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
                         }
                     }
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error = " + databaseError);
                     }
                 });
         finish();
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

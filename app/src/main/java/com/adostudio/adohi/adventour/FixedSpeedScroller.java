@@ -6,7 +6,9 @@ import android.widget.Scroller;
 
 public class FixedSpeedScroller extends Scroller {
 
-    private int mDuration = 2000;
+    private static final String LOGTAG = "FixedSpeedScroller";
+
+    private int scrollDuration = 2000;
 
     public FixedSpeedScroller(Context context) {
         super(context);
@@ -24,12 +26,12 @@ public class FixedSpeedScroller extends Scroller {
     @Override
     public void startScroll(int startX, int startY, int dx, int dy, int duration) {
         // Ignore received duration, use fixed one instead
-        super.startScroll(startX, startY, dx, dy, mDuration);
+        super.startScroll(startX, startY, dx, dy, scrollDuration);
     }
 
     @Override
     public void startScroll(int startX, int startY, int dx, int dy) {
         // Ignore received duration, use fixed one instead
-        super.startScroll(startX, startY, dx, dy, mDuration);
+        super.startScroll(startX, startY, dx, dy, scrollDuration);
     }
 }

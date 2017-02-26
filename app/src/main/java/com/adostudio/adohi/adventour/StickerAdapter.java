@@ -1,13 +1,11 @@
 package com.adostudio.adohi.adventour;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Sticker;
@@ -23,21 +21,22 @@ import jp.wasabeef.glide.transformations.CropCircleTransformation;
  */
 
 public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHolder> {
+
+    private static final String LOGTAG = "StickerAdapter";
+
     private ArrayList<Sticker> stickerDataset;
-    private RequestManager mRequestManager;
+    private RequestManager glideRequestManager;
     private static QuestActivity activity;
 
-    private final float bigSize = 1.2f;
-    private final float smallSize = 1.0f;
-    private final float bigAlpha = 1.0f;
-    private final float smallAlpha = 0.8f;
-
-    private MyApplication myApplication;
+    private static final float BIG_SIZE = 1.2f;
+    private static final float SMALL_SIZE = 1.0f;
+    private static final float BIG_ALPHA = 1.0f;
+    private static final float SMALL_ALPHA = 0.8f;
 
     public StickerAdapter(QuestActivity activity, ArrayList<Sticker> myStickerDataset, RequestManager requestManager) {
         this.activity = activity;
         stickerDataset = myStickerDataset;
-        mRequestManager = requestManager;
+        glideRequestManager = requestManager;
     }
 
 
@@ -55,7 +54,6 @@ public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHold
             firstStickerImageView.setOnClickListener(this);
             secondStickerImageView.setOnClickListener(this);
             thirdStickerImageView.setOnClickListener(this);
-            myApplication = (MyApplication) activity.getApplication();
         }
 
         @Override
@@ -63,40 +61,40 @@ public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHold
 
             int id = v.getId();
             if(id == firstStickerImageView.getId()){
-                firstStickerImageView.setScaleX(bigSize);
-                firstStickerImageView.setScaleY(bigSize);
-                firstStickerImageView.setAlpha(bigAlpha);
-                secondStickerImageView.setScaleX(smallSize);
-                secondStickerImageView.setScaleY(smallSize);
-                secondStickerImageView.setAlpha(smallAlpha);
-                thirdStickerImageView.setScaleX(smallSize);
-                thirdStickerImageView.setScaleY(smallSize);
-                thirdStickerImageView.setAlpha(smallAlpha);
-                myApplication.setStickerPosition(rowPosition);
+                firstStickerImageView.setScaleX(BIG_SIZE);
+                firstStickerImageView.setScaleY(BIG_SIZE);
+                firstStickerImageView.setAlpha(BIG_ALPHA);
+                secondStickerImageView.setScaleX(SMALL_SIZE);
+                secondStickerImageView.setScaleY(SMALL_SIZE);
+                secondStickerImageView.setAlpha(SMALL_ALPHA);
+                thirdStickerImageView.setScaleX(SMALL_SIZE);
+                thirdStickerImageView.setScaleY(SMALL_SIZE);
+                thirdStickerImageView.setAlpha(SMALL_ALPHA);
+                MyApplication.setStickerPosition(rowPosition);
             }
             if(id == R.id.iv_sticker_second){
-                firstStickerImageView.setScaleX(smallSize);
-                firstStickerImageView.setScaleY(smallSize);
-                firstStickerImageView.setAlpha(smallAlpha);
-                secondStickerImageView.setScaleX(bigSize);
-                secondStickerImageView.setScaleY(bigSize);
-                secondStickerImageView.setAlpha(bigAlpha);
-                thirdStickerImageView.setScaleX(smallSize);
-                thirdStickerImageView.setScaleY(smallSize);
-                thirdStickerImageView.setAlpha(smallAlpha);
-                myApplication.setStickerPosition(rowPosition + 1);
+                firstStickerImageView.setScaleX(SMALL_SIZE);
+                firstStickerImageView.setScaleY(SMALL_SIZE);
+                firstStickerImageView.setAlpha(SMALL_ALPHA);
+                secondStickerImageView.setScaleX(BIG_SIZE);
+                secondStickerImageView.setScaleY(BIG_SIZE);
+                secondStickerImageView.setAlpha(BIG_ALPHA);
+                thirdStickerImageView.setScaleX(SMALL_SIZE);
+                thirdStickerImageView.setScaleY(SMALL_SIZE);
+                thirdStickerImageView.setAlpha(SMALL_ALPHA);
+                MyApplication.setStickerPosition(rowPosition + 1);
             }
             if(id == R.id.iv_sticker_third){
-                firstStickerImageView.setScaleX(smallSize);
-                firstStickerImageView.setScaleY(smallSize);
-                firstStickerImageView.setAlpha(smallAlpha);
-                secondStickerImageView.setScaleX(smallSize);
-                secondStickerImageView.setScaleY(smallSize);
-                secondStickerImageView.setAlpha(smallAlpha);
-                thirdStickerImageView.setScaleX(bigSize);
-                thirdStickerImageView.setScaleY(bigSize);
-                thirdStickerImageView.setAlpha(bigAlpha);
-                myApplication.setStickerPosition(rowPosition + 2);
+                firstStickerImageView.setScaleX(SMALL_SIZE);
+                firstStickerImageView.setScaleY(SMALL_SIZE);
+                firstStickerImageView.setAlpha(SMALL_ALPHA);
+                secondStickerImageView.setScaleX(SMALL_SIZE);
+                secondStickerImageView.setScaleY(SMALL_SIZE);
+                secondStickerImageView.setAlpha(SMALL_ALPHA);
+                thirdStickerImageView.setScaleX(BIG_SIZE);
+                thirdStickerImageView.setScaleY(BIG_SIZE);
+                thirdStickerImageView.setAlpha(BIG_ALPHA);
+                MyApplication.setStickerPosition(rowPosition + 2);
             }
             Log.d("click", v.getId() + "   " + firstStickerImageView.getId());
         }
@@ -108,10 +106,10 @@ public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHold
     public StickerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                         int viewType) {
 
-        View v = LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.sticker_row, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        ViewHolder viewHolder = new ViewHolder(view);
+        return viewHolder;
     }
 
 
@@ -119,29 +117,28 @@ public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         try{
-            mRequestManager.load(stickerDataset.get(position * 3).resId)
+            glideRequestManager.load(stickerDataset.get(position * 3).getResId())
                     .into(holder.firstStickerImageView);
         }catch (Exception ex){
-
+            Log.e(LOGTAG, "sticker load failed");
         }
         try{
-            mRequestManager.load(stickerDataset.get(position * 3 + 1).resId)
+            glideRequestManager.load(stickerDataset.get(position * 3 + 1).getResId())
                     .bitmapTransform(new CropCircleTransformation(activity))
                     .into(holder.secondStickerImageView);
         }catch (Exception ex){
-
+            Log.e(LOGTAG, "sticker load failed");
         }
         try{
-            mRequestManager.load(stickerDataset.get(position * 3 + 2).resId)
+            glideRequestManager.load(stickerDataset.get(position * 3 + 2).getResId())
                     .bitmapTransform(new CropCircleTransformation(activity))
                     .into(holder.thirdStickerImageView);
         }catch (Exception ex){
-
+            Log.e(LOGTAG, "sticker load failed");
         }
         holder.rowPosition = position;
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return stickerDataset.size()/3 + 1;

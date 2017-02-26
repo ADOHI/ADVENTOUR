@@ -19,6 +19,9 @@ import java.util.ArrayList;
  */
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
+
+    private static final String LOGTAG = "ReviewAdapter";
+
     private ArrayList<Review> reviewDataset;
     private RequestManager requestManager;
     private static AchievementDetailActivity activity;
@@ -72,18 +75,18 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.reviewNameTextView.setText(reviewDataset.get(position).name);
-        holder.reviewTimeTextView.setText(reviewDataset.get(position).time);
-        holder.reviewTextView.setText(reviewDataset.get(position).review);
+        holder.reviewNameTextView.setText(reviewDataset.get(position).getName());
+        holder.reviewTimeTextView.setText(reviewDataset.get(position).getTime());
+        holder.reviewTextView.setText(reviewDataset.get(position).getReview());
         try{
-            requestManager.load(reviewDataset.get(position).imageUrl).into(holder.reviewSumnailImageView);
+            requestManager.load(reviewDataset.get(position).getImageUrl()).into(holder.reviewSumnailImageView);
             //holder.mainRowImageView.set
         }catch (Exception ex){
         }
-        if(reviewDataset.get(position).star > 1) holder.starImageView2.setImageResource(R.drawable.star_fill);
-        if(reviewDataset.get(position).star > 2) holder.starImageView3.setImageResource(R.drawable.star_fill);
-        if(reviewDataset.get(position).star > 3) holder.starImageView4.setImageResource(R.drawable.star_fill);
-        if(reviewDataset.get(position).star > 4) holder.starImageView5.setImageResource(R.drawable.star_fill);
+        if(reviewDataset.get(position).getStar() > 1) holder.starImageView2.setImageResource(R.drawable.star_fill);
+        if(reviewDataset.get(position).getStar() > 2) holder.starImageView3.setImageResource(R.drawable.star_fill);
+        if(reviewDataset.get(position).getStar() > 3) holder.starImageView4.setImageResource(R.drawable.star_fill);
+        if(reviewDataset.get(position).getStar() > 4) holder.starImageView5.setImageResource(R.drawable.star_fill);
 
     }
 

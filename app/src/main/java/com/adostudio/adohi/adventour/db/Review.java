@@ -6,13 +6,13 @@ package com.adostudio.adohi.adventour.db;
 
 public class Review {
 
-    public String uid;
-    public String name;
-    public String imageUrl;
-    public String review;
+    private String uid;
+    private String name;
+    private String imageUrl;
+    private String review;
 
-    public String time;
-    public int star;
+    private String time;
+    private int star;
 
     public Review() {}
     public Review(String uid, String name, String imageUrl, String review, String time, int star) {
@@ -24,4 +24,51 @@ public class Review {
         this.star = star;
     }
 
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getReview() {
+        return review;
+    }
+
+    public void setReview(String review) {
+        this.review = review;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public int getStar() {
+        return star;
+    }
+
+    public void setStar(int star) {
+        this.star = star;
+    }
 }

@@ -28,20 +28,25 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class QuestIssueActivity extends AppCompatActivity {
-    private MyApplication myapp;
-    private DatabaseReference mDatabase;
-    private RequestManager mGlideRequestManager;
+
+    private static final String LOGTAG = "QuestIssueActivity";
+
+    private DatabaseReference appDatabase;
+    private RequestManager glideRequestManager;
     private String uid;
     private String userName;
     private String photoUrl;
     private String questAsset;
-    private int stickerIndex;
     private boolean issueCheck;
     private int questPosition;
     private double questLng;
     private double questLat;
     private int questResId;
     private Sticker sticker;
+    public static String friendUid;
+    public static String friendName;
+    public static String friendUrl;
+    public static String locationName;
     @BindView(R.id.iv_quest_sticker)ImageView questStickerImageView;
     @BindView(R.id.et_issue_hint)EditText hintEditText;
     @BindView(R.id.iv_issue_from_sumnail)ImageView fromSumnailImageView;
@@ -62,38 +67,40 @@ public class QuestIssueActivity extends AppCompatActivity {
     @BindView(R.id.iv_issue_stamp)ImageView stampImageView;
     @OnClick(R.id.iv_issue_stamp) void stampClick(){
         if (issueCheck) {
-            mDatabase.child("users").child(myapp.getIssueFriendUid()).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(friendUid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            Quest quest = new Quest(sticker, uid, userName, photoUrl, myapp.getIssueFriendUid(),
-                                    myapp.getIssueFriendName(), myapp.getIssueFriendImageUrl(), myapp.getIssueLocationName(),
-                                    hintEditText.getText().toString(), myapp.getCurrentLng(), myapp.getCurrentLat());
-                            user.questList.add(0, quest);
-                            mDatabase.child("users").child(myapp.getIssueFriendUid()).setValue(user);
+                            Quest quest = new Quest(sticker, uid, userName, photoUrl, friendUid,
+                                    friendName, friendUrl, locationName,
+                                    hintEditText.getText().toString(), MyApplication.getCurrentLng(), MyApplication.getCurrentLat());
+                            user.addQuestList(quest);
+                            appDatabase.child("users").child(friendUid).setValue(user);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            Log.d(LOGTAG, "database error = " + databaseError);
                         }
                     });
-            mDatabase.child("users").child(myapp.getMyUid()).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            user.stickerList.remove(questPosition);
-                            myapp.setStickerPosition(-1);
+                            user.removeStickerList(questPosition);
+                            appDatabase.child("users").child(uid).setValue(user);
+                            MyApplication.setStickerPosition(-1);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            Log.d(LOGTAG, "database error = " + databaseError);
                         }
                     });
             finish();
+            MyApplication.init();
         } else {
             Intent intent = new Intent(this, UserDefinedTargets.class);
             intent.putExtra("questlng", questLng);
@@ -109,59 +116,63 @@ public class QuestIssueActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_issue);
         ButterKnife.bind(this);
-        myapp = (MyApplication)getApplication();
+        glideRequestManager = Glide.with(this);
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mGlideRequestManager = Glide.with(this);
+        if (user != null) {
+            uid = user.getUid();
+            userName = user.getDisplayName();
+            photoUrl = user.getPhotoUrl().toString();
+            glideRequestManager.load(user.getPhotoUrl()).into(fromSumnailImageView);
+            fromNameTextView.setText(user.getDisplayName());
+        }
+
+
         Intent intent = getIntent();
         issueCheck = intent.getExtras().getBoolean("issue");
         questPosition = intent.getExtras().getInt("position");
         if(!issueCheck) {
-            mDatabase.child("users").child(myapp.getMyUid()).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            Quest quest = user.questList.get(questPosition);
-                            mGlideRequestManager.load(quest.fromImageUrl).into(fromSumnailImageView);
-                            fromNameTextView.setText(quest.fromName);
-                            mGlideRequestManager.load(quest.toImageUrl).into(toSumnailImageView);
-                            toNameTextView.setText(quest.toName);
-                            locationTextView.setText(quest.locationName);
-                            mGlideRequestManager.load(quest.reward.resId).into(questStickerImageView);
-                            hintEditText.setText(quest.locationHint);
+                            Quest quest = user.getQuestList().get(questPosition);
+                            glideRequestManager.load(quest.getFromImageUrl()).into(fromSumnailImageView);
+                            fromNameTextView.setText(quest.getFromName());
+                            glideRequestManager.load(quest.getToImageUrl()).into(toSumnailImageView);
+                            toNameTextView.setText(quest.getToName());
+                            locationTextView.setText(quest.getLocationName());
+                            glideRequestManager.load(quest.getReward().getResId()).into(questStickerImageView);
+                            hintEditText.setText(quest.getLocationHint());
                             hintEditText.setFocusable(false);
                             hintEditText.setClickable(false);
-                            questLng = quest.locationLng;
-                            questLat = quest.locationLat;
-                            questAsset = quest.reward.assetName;
-                            questResId = quest.reward.resId;
+                            questLng = quest.getLocationLng();
+                            questLat = quest.getLocationLat();
+                            questAsset = quest.getReward().getAssetName();
+                            questResId = quest.getReward().getResId();
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
+                            Log.d(LOGTAG, "database error = " + databaseError);
 
                         }
                     });
         } else {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            if (user != null) {
-                uid = user.getUid();
-                userName = user.getDisplayName();
-                photoUrl = user.getPhotoUrl().toString();
-                Glide.with(this).load(user.getPhotoUrl()).into(fromSumnailImageView);
-                fromNameTextView.setText(user.getDisplayName());
-            }
-            mDatabase.child("users").child(myapp.getMyUid()).addListenerForSingleValueEvent(
+
+            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            sticker = user.stickerList.get(questPosition);
-                            mGlideRequestManager.load(sticker.resId).into(questStickerImageView);
+                            sticker = user.getStickerList().get(questPosition);
+                            glideRequestManager.load(sticker.getResId()).into(questStickerImageView);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
+                            Log.d(LOGTAG, "database error = " + databaseError);
 
                         }
                     });
@@ -174,12 +185,12 @@ public class QuestIssueActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(myapp.getIssueFriendImageUrl() != null && myapp.getIssueFriendName() != null) {
-            Glide.with(this).load(myapp.getIssueFriendImageUrl()).into(toSumnailImageView);
-            toNameTextView.setText(myapp.getIssueFriendName());
+        if(MyApplication.getIssueFriendImageUrl() != null && MyApplication.getIssueFriendName() != null) {
+            Glide.with(this).load(MyApplication.getIssueFriendImageUrl()).into(toSumnailImageView);
+            toNameTextView.setText(MyApplication.getIssueFriendName());
         }
-        if(myapp.getIssueLocationName() != null) {
-            locationTextView.setText(myapp.getIssueLocationName());
+        if(MyApplication.getIssueLocationName() != null) {
+            locationTextView.setText(MyApplication.getIssueLocationName());
         }
 
     }
@@ -187,9 +198,6 @@ public class QuestIssueActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        myapp.setIssueFriendUid(null);
-        myapp.setIssueFriendName(null);
-        myapp.setIssueFriendImageUrl(null);
-        myapp.setIssueLocationName(null);
+        MyApplication.init();
     }
 }

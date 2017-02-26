@@ -10,12 +10,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -47,7 +45,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -83,13 +80,16 @@ import butterknife.OnClick;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener
         ,TabLayout.OnTabSelectedListener{
-    private GoogleMap mMap;
+
+    private static final String LOGTAG = "MapsActivity";
+    private static final int NEAR_SEARCH_DISTANCE = 1000;
+    private GoogleMap achievementMap;
     private SupportMapFragment mapFragment;
-    private GoogleApiClient mGoogleApiClient;
-    private HashMap<Marker, Integer> mHashMap;
-    private Location mLastLocation;
-    private Location mCurrentLocation;
-    private LocationRequest mLocationRequest;
+    private GoogleApiClient googleApiClient;
+    private HashMap<Marker, Integer> markerHashMap;
+    private Location lastLocation;
+    private Location currentLocation;
+    private LocationRequest locationRequest;
     private PendingResult<LocationSettingsResult> result;
     final int PLACE_PICKER_REQUEST = -1;
     private ArrayList<Achievement> markerAchievementList;
@@ -99,84 +99,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @OnClick(R.id.bt_tracker)void trackerButtonClick(){
         LatLng target;
         try {
-            target = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            target = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         } catch (Exception ex){
-            target = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            target = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
         }
-        CameraPosition position = this.mMap.getCameraPosition();
-
         CameraPosition.Builder builder = new CameraPosition.Builder();
         builder.zoom(15);
         builder.target(target);
-
-        this.mMap.animateCamera(CameraUpdateFactory.newCameraPosition(builder.build()));
+        this.achievementMap.animateCamera(CameraUpdateFactory.newCameraPosition(builder.build()));
     }
     @BindView(R.id.et_searchwindow)EditText searchWindowEditText;
     @BindView(R.id.bt_search)FloatingActionButton searchFloatingButton;
     @OnClick(R.id.bt_search)void searchButtonClick()  {
         try {
-            StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/searchKeyword");
-            urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
-            urlBuilder.append("&keyword=" + URLEncoder.encode(searchWindowEditText.getText().toString(), "utf-8"));
-            urlBuilder.append("&areaCode=&sigunguCode=&cat1=&cat2=&cat3=&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=B&numOfRows=999&pageNo=1");
+            StringBuilder urlBuilder = new StringBuilder(getString(R.string.tour_keyword_search_first));
+            urlBuilder.append(getString(R.string.tour_api_key));
+            urlBuilder.append(getString(R.string.tour_keyword_search_second));
+            urlBuilder.append(URLEncoder.encode(searchWindowEditText.getText().toString(), "utf-8"));
+            urlBuilder.append(getString(R.string.tour_keyword_search_third));
             GetXMLTask task = new GetXMLTask();
             task.execute(urlBuilder.toString());
         }catch (Exception ex){}
-
+            Log.d(LOGTAG, "parsing failed");
     }
 
-    @BindView(R.id.rv_achievement)RecyclerView mRecyclerView;
-    @BindView(R.id.rv_bookmark_achievement)RecyclerView mBookmarkRecyclerView;
-    @BindView(R.id.rv_trophy_achievement)RecyclerView mTrophyRecyclerView;
+    @BindView(R.id.rv_achievement)RecyclerView achievementRecyclerView;
+    @BindView(R.id.rv_bookmark_achievement)RecyclerView bookmarkRecyclerView;
+    @BindView(R.id.rv_trophy_achievement)RecyclerView trophyRecyclerView;
 
-    private TabLayout tabLayout;
     private Document doc = null;
 
 
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.Adapter mBookmarkAdapter;
-    private RecyclerView.Adapter mTrophyAdapter;
+    private RecyclerView.Adapter achievementAdapter;
+    private RecyclerView.Adapter bookmarkAdapter;
+    private RecyclerView.Adapter trophyAdapter;
 
-    private RecyclerView.LayoutManager mLayoutManager;
-    private RecyclerView.LayoutManager mBookmarkLayoutManager;
-    private RecyclerView.LayoutManager mTrophyLayoutManager;
+    private RecyclerView.LayoutManager achievementLayoutManager;
+    private RecyclerView.LayoutManager bookmarkLayoutManager;
+    private RecyclerView.LayoutManager trophyLayoutManager;
 
 
-    private DatabaseReference mDatabase;
+    private DatabaseReference appDatabase;
     private String uid;
 
-    private TabLayout mTabLayout;
+    private TabLayout achievementTabLayout;
 
 
 
-    private RequestManager mGlideRequestManager;
+    private RequestManager glideRequestManager;
     @BindView(R.id.bt_refresh)FloatingActionButton refreshFloatingButton;
     @OnClick(R.id.bt_refresh)void refreshButtonClick(){
-        StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/locationBasedList");
-        urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
-        urlBuilder.append("&contentTypeId=" + "&mapX" + "=" + String.format("%.6f",  mMap.getCameraPosition().target.longitude));
-        urlBuilder.append("&mapY" + "=" + String.format("%.6f", mMap.getCameraPosition().target.latitude));
-        urlBuilder.append("&radius" + "=" + Integer.toString(1000));
-        urlBuilder.append("&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=E&numOfRows=999&pageNo=1");
-        GetXMLTask task = new GetXMLTask();
-        task.execute(urlBuilder.toString());
+        try {
+            StringBuilder urlBuilder = new StringBuilder(getString(R.string.tour_location_search_first));
+            urlBuilder.append(getString(R.string.tour_api_key));
+            urlBuilder.append(getString(R.string.tour_location_search_second));
+            urlBuilder.append(String.format("%.6f", achievementMap.getCameraPosition().target.longitude));
+            urlBuilder.append(getString(R.string.tour_location_search_third));
+            urlBuilder.append(String.format("%.6f", achievementMap.getCameraPosition().target.latitude));
+            urlBuilder.append(getString(R.string.tour_location_search_fourth));
+            urlBuilder.append(Integer.toString(NEAR_SEARCH_DISTANCE));
+            urlBuilder.append(getString(R.string.tour_location_search_fifth));
+            GetXMLTask task = new GetXMLTask();
+            task.execute(urlBuilder.toString());
+        } catch (Exception ex) {
+            Log.d(LOGTAG, "refresh parsing failed");
+        }
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         ButterKnife.bind(this);
-        // Obtain the SupportMapFragment and get_button notified when the map is ready to be used.
+
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        if (mGoogleApiClient == null) {
-            // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
-            // See https://g.co/AppIndexing/AndroidStudio for more information.
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
+        if (googleApiClient == null) {
+
+            googleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
@@ -188,79 +190,67 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
 
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getToken() instead.
             uid = user.getUid();
 
         } else {
-            // No user is signed in
+            Log.d(LOGTAG, "user unsigned");
         }
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("users").child(uid).addValueEventListener(
+
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+        appDatabase.child("users").child(uid).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
+
                         User user = dataSnapshot.getValue(User.class);
                         markerBookmarkList.clear();
                         trophyList.clear();
-                        for(Achievement a : user.bookmarkList){
-                            markerBookmarkList.add(a);
-                            LatLng pinPosition = new LatLng(a.lat, a.lng);
-                            addMarker();
-                        }
-                        for(Achievement b : user.achievementList){
-                            trophyList.add(b);
-                        }
-                        mBookmarkAdapter.notifyDataSetChanged();
-                        mTrophyAdapter.notifyDataSetChanged();
+                        markerBookmarkList.addAll(user.getBookmarkList());
+                        trophyList.addAll(user.getAchievementList());
+                        addMarker();
+                        bookmarkAdapter.notifyDataSetChanged();
+                        trophyAdapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error = " + databaseError);
                     }
                 });
+
         markerAchievementList = new ArrayList<>();
         markerBookmarkList = new ArrayList<>();
         trophyList = new ArrayList<>();
-        mGlideRequestManager = Glide.with(this);
+        glideRequestManager = Glide.with(this);
 
-        mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new MyAdapter(this, markerAchievementList, mGlideRequestManager);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        achievementRecyclerView.setHasFixedSize(true);
+        achievementLayoutManager = new LinearLayoutManager(this);
+        achievementRecyclerView.setLayoutManager(achievementLayoutManager);
+        achievementAdapter = new MapsLocationAdapter(this, markerAchievementList, glideRequestManager);
+        achievementRecyclerView.setAdapter(achievementAdapter);
+        achievementRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
-        mBookmarkRecyclerView.setHasFixedSize(true);
-        mBookmarkLayoutManager = new LinearLayoutManager(this);
-        mBookmarkRecyclerView.setLayoutManager(mBookmarkLayoutManager);
-        mBookmarkAdapter = new MyAdapter(this, markerBookmarkList, mGlideRequestManager);
-        mBookmarkRecyclerView.setAdapter(mBookmarkAdapter);
-        mBookmarkRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        bookmarkRecyclerView.setHasFixedSize(true);
+        bookmarkLayoutManager = new LinearLayoutManager(this);
+        bookmarkRecyclerView.setLayoutManager(bookmarkLayoutManager);
+        bookmarkAdapter = new MapsLocationAdapter(this, markerBookmarkList, glideRequestManager);
+        bookmarkRecyclerView.setAdapter(bookmarkAdapter);
+        bookmarkRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
-        mTrophyRecyclerView.setHasFixedSize(true);
-        mTrophyLayoutManager = new LinearLayoutManager(this);
-        mTrophyRecyclerView.setLayoutManager(mTrophyLayoutManager);
-        mTrophyAdapter = new AchievementAdapter(this, trophyList, mGlideRequestManager);
-        mTrophyRecyclerView.setAdapter(mTrophyAdapter);
-        mTrophyRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        trophyRecyclerView.setHasFixedSize(true);
+        trophyLayoutManager = new LinearLayoutManager(this);
+        trophyRecyclerView.setLayoutManager(trophyLayoutManager);
+        trophyAdapter = new AchievementAdapter(this, trophyList, glideRequestManager);
+        trophyRecyclerView.setAdapter(trophyAdapter);
+        trophyRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
-        mTabLayout = (TabLayout) findViewById(R.id.tl_tablayout);
-        mTabLayout.addOnTabSelectedListener(this);
+        achievementTabLayout = (TabLayout) findViewById(R.id.tl_tablayout);
+        achievementTabLayout.addOnTabSelectedListener(this);
 
-        Intent getIntent = getIntent();
-        mLastLocation = new Location(LocationManager.GPS_PROVIDER);
-        mLastLocation.setLongitude(121);
-        mLastLocation.setLatitude(37);
-
-
+        lastLocation = new Location(LocationManager.GPS_PROVIDER);
+        lastLocation.setLongitude(121);
+        lastLocation.setLatitude(37);
 
     }
     public void openPlacePicker(View view) {
@@ -305,18 +295,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     protected void onStart() {
-        mGoogleApiClient.connect();
+        googleApiClient.connect();
         super.onStart();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
+        AppIndex.AppIndexApi.start(googleApiClient, getIndexApiAction());
     }
 
     protected void onStop() {
-        mGoogleApiClient.disconnect();
+        googleApiClient.disconnect();
         super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
 // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
+        AppIndex.AppIndexApi.end(googleApiClient, getIndexApiAction());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     /**
@@ -330,30 +325,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        achievementMap = googleMap;
+        achievementMap.setMyLocationEnabled(true);
+        achievementMap.getUiSettings().setMyLocationButtonEnabled(false);
         // Add a marker in Sydney and move the camera
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
+        achievementMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
         {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                Log.d("asdfg", marker.getId());
-                int markerIndex = mHashMap.get(marker);
+                int markerIndex = markerHashMap.get(marker);
                 Intent intent = new Intent(getApplicationContext(), AchievementDetailActivity.class);
                 if(markerIndex < markerAchievementList.size()) {
-                    intent.putExtra("contentid", markerAchievementList.get(markerIndex).contentId);
-                    intent.putExtra("contenttypeid", markerAchievementList.get(markerIndex).contentTypeId);
-                    intent.putExtra("distance", markerAchievementList.get(markerIndex).distance);
-                    intent.putExtra("mapx", markerAchievementList.get(markerIndex).lng);
-                    intent.putExtra("mapy", markerAchievementList.get(markerIndex).lat);
+                    intent.putExtra("contentid", markerAchievementList.get(markerIndex).getContentId());
+                    intent.putExtra("contenttypeid", markerAchievementList.get(markerIndex).getContentTypeId());
+                    intent.putExtra("distance", markerAchievementList.get(markerIndex).getDistance());
+                    intent.putExtra("mapx", markerAchievementList.get(markerIndex).getLng());
+                    intent.putExtra("mapy", markerAchievementList.get(markerIndex).getLat());
                 } else {
                     markerIndex -= markerAchievementList.size();
-                    intent.putExtra("contentid", markerBookmarkList.get(markerIndex).contentId);
-                    intent.putExtra("contenttypeid", markerBookmarkList.get(markerIndex).contentTypeId);
-                    intent.putExtra("distance", markerBookmarkList.get(markerIndex).distance);
-                    intent.putExtra("mapx", markerBookmarkList.get(markerIndex).lng);
-                    intent.putExtra("mapy", markerBookmarkList.get(markerIndex).lat);
+                    intent.putExtra("contentid", markerBookmarkList.get(markerIndex).getContentId());
+                    intent.putExtra("contenttypeid", markerBookmarkList.get(markerIndex).getContentTypeId());
+                    intent.putExtra("distance", markerBookmarkList.get(markerIndex).getDistance());
+                    intent.putExtra("mapx", markerBookmarkList.get(markerIndex).getLng());
+                    intent.putExtra("mapy", markerBookmarkList.get(markerIndex).getLat());
                 }
                 startActivity(intent);
             }
@@ -363,9 +357,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLastLocation != null) {
+        lastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                googleApiClient);
+        if (lastLocation != null) {
         }
         startLocationUpdates();
         trackerButtonClick();
@@ -374,45 +368,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Log.d(LOGTAG, "connection suspended");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.d(LOGTAG, "connection failed");
     }
 
     protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
+                .addLocationRequest(locationRequest);
         result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
+                LocationServices.SettingsApi.checkLocationSettings(googleApiClient,
                         builder.build());
     }
     protected void startLocationUpdates() {
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+                googleApiClient, locationRequest, this);
     }
     @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
+        currentLocation = location;
+        for (Achievement a : markerAchievementList) {
+
+            Location achievementLocation = new Location(LocationManager.GPS_PROVIDER);
+            achievementLocation.setLongitude(a.getLng());
+            achievementLocation.setLatitude(a.getLat());
+            double distance;
+            distance = location.distanceTo(achievementLocation);
+            a.setDistance(distance);
+        }
+        achievementAdapter.notifyDataSetChanged();
+        addMarker();
     }
-
-    private void updateUI() {
-
-    }
-
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
         if(tab.getPosition() == 0){
-            mRecyclerView.setVisibility(View.GONE);
-            mBookmarkRecyclerView.setVisibility(View.GONE);
-            mTrophyRecyclerView.setVisibility(View.GONE);
+            achievementRecyclerView.setVisibility(View.GONE);
+            bookmarkRecyclerView.setVisibility(View.GONE);
+            trophyRecyclerView.setVisibility(View.GONE);
             trackerFloatingButton.setVisibility(View.VISIBLE);
             refreshFloatingButton.setVisibility(View.VISIBLE);
             searchFloatingButton.setVisibility(View.GONE);
@@ -422,9 +422,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ft.show(mapFragment).commit();
 
         } else if(tab.getPosition() == 1){
-            mRecyclerView.setVisibility(View.VISIBLE);
-            mBookmarkRecyclerView.setVisibility(View.GONE);
-            mTrophyRecyclerView.setVisibility(View.GONE);
+            achievementRecyclerView.setVisibility(View.VISIBLE);
+            bookmarkRecyclerView.setVisibility(View.GONE);
+            trophyRecyclerView.setVisibility(View.GONE);
             trackerFloatingButton.setVisibility(View.GONE);
             refreshFloatingButton.setVisibility(View.GONE);
             searchFloatingButton.setVisibility(View.VISIBLE);
@@ -435,9 +435,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         } else if(tab.getPosition() == 2) {
-            mRecyclerView.setVisibility(View.GONE);
-            mBookmarkRecyclerView.setVisibility(View.VISIBLE);
-            mTrophyRecyclerView.setVisibility(View.GONE);
+            achievementRecyclerView.setVisibility(View.GONE);
+            bookmarkRecyclerView.setVisibility(View.VISIBLE);
+            trophyRecyclerView.setVisibility(View.GONE);
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.hide(mapFragment).commit();
@@ -448,9 +448,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         } else if(tab.getPosition() == 3) {
-            mRecyclerView.setVisibility(View.GONE);
-            mBookmarkRecyclerView.setVisibility(View.GONE);
-            mTrophyRecyclerView.setVisibility(View.VISIBLE);
+            achievementRecyclerView.setVisibility(View.GONE);
+            bookmarkRecyclerView.setVisibility(View.GONE);
+            trophyRecyclerView.setVisibility(View.VISIBLE);
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.hide(mapFragment).commit();
@@ -512,7 +512,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String s = "";
             NodeList nodeList = doc.getElementsByTagName("item");
             markerAchievementList.clear();
-            mMap.clear();
+            achievementMap.clear();
             for(int i = 0; i< nodeList.getLength(); i++){
                 Node node = nodeList.item(i);
                 Element fstElmnt = (Element) node;
@@ -548,9 +548,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     location.setLatitude(y);
                     double distance;
                     try {
-                        distance = mCurrentLocation.distanceTo(location);
+                        distance = currentLocation.distanceTo(location);
                     } catch (Exception ex){
-                        distance = mLastLocation.distanceTo(location);
+                        distance = lastLocation.distanceTo(location);
                     }
                     contentIdString = contentId.item(0).getChildNodes().item(0).getNodeValue();
                     contentTypeIdString = contentTypeId.item(0).getChildNodes().item(0).getNodeValue();
@@ -562,7 +562,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
             addMarker();
-            mAdapter.notifyDataSetChanged();
+            achievementAdapter.notifyDataSetChanged();
 
             super.onPostExecute(doc);
         }
@@ -571,53 +571,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }//end inner class - GetXMLTask
 
     public void addMarker(){
-        mMap.clear();
-        mHashMap = new HashMap<Marker, Integer>();
+        achievementMap.clear();
+        markerHashMap = new HashMap<Marker, Integer>();
         int i = 0;
         double lat = 0, lng = 0;
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.placeholder);
+
         for(Achievement a : markerAchievementList){
-            LatLng pinPosition = new LatLng(a.lat, a.lng);
+            LatLng pinPosition = new LatLng(a.getLat(), a.getLng());
             Location location = new Location(LocationManager.GPS_PROVIDER);
-            location.setLongitude(a.lng);
-            location.setLatitude(a.lat);
+            location.setLongitude(a.getLng());
+            location.setLatitude(a.getLat());
             double distance;
 
 
             try {
-                distance = mCurrentLocation.distanceTo(location);
+                distance = currentLocation.distanceTo(location);
             } catch (Exception ex){
-                distance = mLastLocation.distanceTo(location);
+                distance = lastLocation.distanceTo(location);
             }
             String pinDistance;
+
             if( distance > 1000) {
                 pinDistance = String.format("%.2f" , distance/1000) + "km";
             } else {
                 pinDistance = (int)distance + "m";
             }
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .title(a.title)
-                    .snippet(pinDistance)
-                    .position(pinPosition));
-            mHashMap.put(marker, i++);
-            lat += a.lat;
-            lng += a.lng;
-        }
 
-        for(Achievement a : markerBookmarkList){
-            LatLng pinPosition = new LatLng(a.lat, a.lng);
-            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.placeholder);
-            String pinDistance;
-            if( a.distance > 1000) {
-                pinDistance = String.format("%.2f" , a.distance/1000) + "km";
-            } else {
-                pinDistance = (int)a.distance + "m";
-            }
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .title(a.title)
+            Marker marker = achievementMap.addMarker(new MarkerOptions()
+                    .title(a.getTitle())
                     .snippet(pinDistance)
                     .position(pinPosition));
-            marker.setIcon(icon);
-            mHashMap.put(marker, i++);
+
+            for(Achievement b : markerBookmarkList) {
+                if(a.getLat() == b.getLat() && a.getLng() == b.getLng()) marker.setIcon(icon);
+            }
+
+            markerHashMap.put(marker, i++);
         }
     }
 }

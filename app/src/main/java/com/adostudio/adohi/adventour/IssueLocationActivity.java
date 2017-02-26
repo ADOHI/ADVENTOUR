@@ -8,14 +8,11 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Achievement;
-import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.google.android.gms.maps.model.LatLng;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,16 +28,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class IssueLocationActivity extends AppCompatActivity {
 
+    private static final String LOGTAG = "IssueLocationActivity";
+    private static final int NEAR_LOCATION_DISTANCE = 100;
     private ArrayList<Achievement> nearAchievementArrayList;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
-    private RequestManager mGlideRequestManager;
-    private Document doc = null;
-    private MyApplication myApplication;
+    private RecyclerView.Adapter nearAchievementAdapter;
+    private RecyclerView.LayoutManager nearAchievementLayoutManager;
+    private RequestManager glideRequestManager;
+    private Document parsingDocument = null;
     @BindView(R.id.rv_issue_location)RecyclerView issueLocationRecyclerView;
 
     @Override
@@ -48,22 +45,24 @@ public class IssueLocationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issue_location);
         ButterKnife.bind(this);
-        myApplication = (MyApplication)getApplication();
-        mGlideRequestManager = Glide.with(this);
+        glideRequestManager = Glide.with(this);
         nearAchievementArrayList = new ArrayList<>();
         issueLocationRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this);
-        issueLocationRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new MyAdapter(this, nearAchievementArrayList, mGlideRequestManager);
-        issueLocationRecyclerView.setAdapter(mAdapter);
+        nearAchievementLayoutManager = new LinearLayoutManager(this);
+        issueLocationRecyclerView.setLayoutManager(nearAchievementLayoutManager);
+        nearAchievementAdapter = new MapsLocationAdapter(this, nearAchievementArrayList, glideRequestManager);
+        issueLocationRecyclerView.setAdapter(nearAchievementAdapter);
         issueLocationRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
 
-        StringBuilder urlBuilder = new StringBuilder("http://api.visitkorea.or.kr/openapi/service/rest/KorService/locationBasedList");
-        urlBuilder.append("?" + "ServiceKey" + "=JNbqf4NQaSTqFcIueZ7tna%2B1OvOKTiRGmCMpdoL%2FxlE4YUkZPfVhxk9rwarKYNACs1UfYGj49jO%2BKFYKSqsFhQ%3D%3D");
-        urlBuilder.append("&contentTypeId=" + "&mapX" + "=" + String.format("%.6f",  myApplication.getCurrentLng()));
-        urlBuilder.append("&mapY" + "=" + String.format("%.6f", myApplication.getCurrentLat()));
-        urlBuilder.append("&radius" + "=" + Integer.toString(100));
-        urlBuilder.append("&listYN=Y&MobileOS=AND&MobileApp=TourAPI3.0_Guide&arrange=E&numOfRows=999&pageNo=1");
+        StringBuilder urlBuilder = new StringBuilder(getString(R.string.tour_location_search_first));
+        urlBuilder.append(getString(R.string.tour_api_key));
+        urlBuilder.append(getString(R.string.tour_location_search_second));
+        urlBuilder.append(String.format("%.6f",  MyApplication.getCurrentLng()));
+        urlBuilder.append(getString(R.string.tour_location_search_third));
+        urlBuilder.append(String.format("%.6f", MyApplication.getCurrentLat()));
+        urlBuilder.append(getString(R.string.tour_location_search_fourth));
+        urlBuilder.append(Integer.toString(NEAR_LOCATION_DISTANCE));
+        urlBuilder.append(getString(R.string.tour_location_search_fifth));
         GetXMLTask task = new GetXMLTask();
         task.execute(urlBuilder.toString());
     }
@@ -76,35 +75,33 @@ public class IssueLocationActivity extends AppCompatActivity {
             try {
                 url = new URL(urls[0]);
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder(); //XML문서 빌더 객체를 생성
-                doc = db.parse(new InputSource(url.openStream())); //XML문서를 파싱한다.
-                doc.getDocumentElement().normalize();
-
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                parsingDocument = db.parse(new InputSource(url.openStream()));
+                parsingDocument.getDocumentElement().normalize();
             } catch (Exception e) {
-                Toast.makeText(getBaseContext(), "Parsing Error", Toast.LENGTH_SHORT).show();
+                Log.d(LOGTAG, "parsing error");
             }
-            return doc;
+            return parsingDocument;
         }
 
         @Override
-        protected void onPostExecute(Document doc) {
+        protected void onPostExecute(Document document) {
 
-            String s = "";
-            NodeList nodeList = doc.getElementsByTagName("item");
+            NodeList nodeList = document.getElementsByTagName("item");
             nearAchievementArrayList.clear();
 
             for(int i = 0; i< nodeList.getLength(); i++){
                 Node node = nodeList.item(i);
-                Element fstElmnt = (Element) node;
-                NodeList contentTypeId = fstElmnt.getElementsByTagName("contenttypeid");
+                Element firstElement = (Element) node;
+                NodeList contentTypeId = firstElement.getElementsByTagName("contenttypeid");
                 if(!(contentTypeId.item(0).getChildNodes().item(0).getNodeValue().equals("25"))) {
                     Log.d("whynot", contentTypeId.item(0).getChildNodes().item(0).getNodeValue());
-                    NodeList sumnail = fstElmnt.getElementsByTagName("firstimage");
-                    NodeList mapX = fstElmnt.getElementsByTagName("mapx");
-                    NodeList mapY = fstElmnt.getElementsByTagName("mapy");
-                    NodeList title = fstElmnt.getElementsByTagName("title");
-                    NodeList address = fstElmnt.getElementsByTagName("addr1");
-                    NodeList contentId = fstElmnt.getElementsByTagName("contentid");
+                    NodeList sumnail = firstElement.getElementsByTagName("firstimage");
+                    NodeList mapX = firstElement.getElementsByTagName("mapx");
+                    NodeList mapY = firstElement.getElementsByTagName("mapy");
+                    NodeList title = firstElement.getElementsByTagName("title");
+                    NodeList address = firstElement.getElementsByTagName("addr1");
+                    NodeList contentId = firstElement.getElementsByTagName("contentid");
                     String sumnailString;
                     String titleString;
                     String addressString;
@@ -126,12 +123,12 @@ public class IssueLocationActivity extends AppCompatActivity {
                     location.setLatitude(y);
                     double distance = 0;
                     Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
-                    currentLocation.setLongitude(myApplication.getCurrentLng());
-                    currentLocation.setLatitude(myApplication.getCurrentLat());
+                    currentLocation.setLongitude(MyApplication.getCurrentLng());
+                    currentLocation.setLatitude(MyApplication.getCurrentLat());
                     try {
                         distance = currentLocation.distanceTo(location);
                     } catch (Exception ex){
-                        Log.d("location", "not detected");
+                        Log.d(LOGTAG, "current location is not detected");
                     }
                     contentIdString = contentId.item(0).getChildNodes().item(0).getNodeValue();
                     contentTypeIdString = contentTypeId.item(0).getChildNodes().item(0).getNodeValue();
@@ -139,8 +136,8 @@ public class IssueLocationActivity extends AppCompatActivity {
                             null, null, "", x, y, sumnailString, distance));
                 }
             }
-            mAdapter.notifyDataSetChanged();
-            super.onPostExecute(doc);
+            nearAchievementAdapter.notifyDataSetChanged();
+            super.onPostExecute(document);
         }
 
 

@@ -71,7 +71,7 @@ public class UserDefinedTargets extends FragmentActivity implements
 {
 
     private static final String LOGTAG = "UserDefinedTargets";
-    private MyApplication myApplication;
+    private static final int GET_STICKER_DISTANCE = 50;
     private double questLng;
     private double questLat;
     private String questAsset = "tw1.jpg";
@@ -148,10 +148,6 @@ public class UserDefinedTargets extends FragmentActivity implements
         
         mIsDroidDevice = android.os.Build.MODEL.toLowerCase().startsWith(
             "droid");
-
-        myApplication = (MyApplication) getApplication();
-
-
 
     }
     @Override
@@ -425,13 +421,13 @@ public class UserDefinedTargets extends FragmentActivity implements
     public void onCameraClick(View v) {
 
         Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
-        currentLocation.setLongitude(myApplication.getCurrentLng());
-        currentLocation.setLatitude(myApplication.getCurrentLat());
+        currentLocation.setLongitude(MyApplication.getCurrentLng());
+        currentLocation.setLatitude(MyApplication.getCurrentLat());
         Location qusetLocation = new Location(LocationManager.GPS_PROVIDER);
         qusetLocation.setLongitude(questLng);
         qusetLocation.setLatitude(questLat);
         int distance = (int) currentLocation.distanceTo(qusetLocation);
-        if (distance < 50){
+        if (distance < GET_STICKER_DISTANCE) {
             if (isUserDefinedTargetsRunning()) {
                 // Shows the loading dialog
                 loadingDialogHandler
@@ -441,9 +437,7 @@ public class UserDefinedTargets extends FragmentActivity implements
                 startBuild();
 
             }
-         } else {
-            
-        }
+         }
 
     }
 

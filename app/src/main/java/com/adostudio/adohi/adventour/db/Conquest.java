@@ -8,10 +8,10 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
 public class Conquest {
-    public String contentId;
-    public String uid;
-    public String name;
-    public String imageUrl;
+    private String contentId;
+    private String uid;
+    private String name;
+    private String imageUrl;
     public Conquest() {
 
     }
@@ -22,5 +22,37 @@ public class Conquest {
         this.imageUrl = imageUrl;
 
 
+    }
+
+    public String getContentId() {
+        return contentId;
+    }
+
+    public void setContentId(String contentId) {
+        this.contentId = contentId;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

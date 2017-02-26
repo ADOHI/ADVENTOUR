@@ -15,17 +15,18 @@ import java.util.ArrayList;
 @IgnoreExtraProperties
 public class User {
 
-    public String userName;
-    public String photoUrl;
-    public String memo;
-    public String uid;
+    private String userName;
+    private String photoUrl;
+    private String memo;
+    private String uid;
 
-    public ArrayList<Achievement> bookmarkList;
-    public ArrayList<Achievement> achievementList;
-    public ArrayList<Achievement> flagList;
-    public ArrayList<String> friendList;
-    public ArrayList<Sticker> stickerList;
-    public ArrayList<Quest> questList;
+    private ArrayList<Achievement> bookmarkList;
+    private ArrayList<Achievement> achievementList;
+    private ArrayList<Achievement> flagList;
+    private ArrayList<String> friendList;
+    private ArrayList<Sticker> stickerList;
+    private ArrayList<Quest> questList;
+
     public User() {
         this.friendList = new ArrayList<>();
         this.achievementList = new ArrayList<>();
@@ -41,19 +42,126 @@ public class User {
 
     public User(String userName) {
         this.userName = userName;
+    }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public ArrayList<Achievement> getBookmarkList() {
+        return bookmarkList;
+    }
+
+    public void setBookmarkList(ArrayList<Achievement> bookmarkList) {
+        this.bookmarkList = bookmarkList;
+    }
+
+    public void addBookmarkList(Achievement bookmark) {
+        this.bookmarkList.add(0, bookmark);
+    }
+
+    public ArrayList<Achievement> getAchievementList() {
+        return achievementList;
+    }
+
+    public void setAchievementList(ArrayList<Achievement> achievementList) {
+        this.achievementList = achievementList;
+    }
+
+    public ArrayList<Achievement> getFlagList() {
+        return flagList;
+    }
+
+    public void setFlagList(ArrayList<Achievement> flagList) {
+        this.flagList = flagList;
+    }
+
+    public void addFlagList(Achievement flag) {
+        this.flagList.add(0, flag);
+    }
+
+    public ArrayList<String> getFriendList() {
+        return friendList;
+    }
+
+    public void setFriendList(ArrayList<String> friendList) {
+        this.friendList = friendList;
+    }
+
+    public void addFriendList(String friend) {
+        this.friendList.add(friend);
+    }
+
+    public void removeFriendList(String friend) {
+        this.friendList.remove(friend);
+    }
+
+    public ArrayList<Sticker> getStickerList() {
+        return stickerList;
+    }
+
+    public void setStickerList(ArrayList<Sticker> stickerList) {
+        this.stickerList = stickerList;
+    }
+
+    public void addStickerList(Sticker sticker) {
+        this.stickerList.add(sticker);
+    }
+
+    public void removeStickerList(int position) {
+        this.stickerList.remove(position);
+    }
+
+    public ArrayList<Quest> getQuestList() {
+        return questList;
+    }
+
+    public void setQuestList(ArrayList<Quest> questList) {
+        this.questList = questList;
+    }
+
+    public void addQuestList(Quest quest) {
+        this.questList.add(0, quest);
     }
 
     public boolean checkBookmarkId(String id){
         for(Achievement a : bookmarkList){
-            if(a.contentId.equals(id))return true;
+            if(a.getContentId().equals(id))return true;
         }
         return false;
     }
 
     public boolean checkAchievementId(String id){
         for(Achievement a : achievementList){
-            if(a.contentId.equals(id))return true;
+            if(a.getContentId().equals(id))return true;
         }
         return false;
     }
@@ -61,7 +169,7 @@ public class User {
     public void removeBookmark(String id){
         int index = 0;
         for(Achievement a : bookmarkList){
-            if(a.contentId.equals(id)){
+            if(a.getContentId().equals(id)){
                 bookmarkList.remove(index);
                 break;
             } else index++;
@@ -71,7 +179,7 @@ public class User {
     public void removeFlag(String id){
         int index = 0;
         for(Achievement a : bookmarkList){
-            if(a.contentId.equals(id)){
+            if(a.getContentId().equals(id)){
                 flagList.remove(index);
                 break;
             } else index++;
@@ -82,7 +190,7 @@ public class User {
     public void removeQuest(double lng, double lat){
         int index = 0;
         for(Quest q : questList){
-            if(q.locationLat == lat && q.locationLng == lng){
+            if(q.getLocationLat() == lat && q.getLocationLng() == lng){
                 questList.remove(index);
                 break;
             } else index++;
