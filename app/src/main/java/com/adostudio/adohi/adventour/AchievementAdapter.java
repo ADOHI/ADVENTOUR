@@ -94,10 +94,14 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
         holder.achievementDateTextView.setText(achievementDataset.get(position).getTime());
 
         try{
-            achievementRequestManager.load(achievementDataset.get(position).getImageUrl()).into(holder.achievementSumnailImageView);
+            achievementRequestManager.load(achievementDataset.get(position).getImageUrl())
+                    .thumbnail(0.1f)
+                    .into(holder.achievementSumnailImageView);
             //holder.mainRowImageView.set
         }catch (Exception ex){
-
+            achievementRequestManager.load(R.drawable.no_image)
+                    .thumbnail(0.1f)
+                    .into(holder.achievementSumnailImageView);
         }
         holder.contentId = achievementDataset.get(position).getContentId();
         holder.contentTypeId = achievementDataset.get(position).getContentTypeId();

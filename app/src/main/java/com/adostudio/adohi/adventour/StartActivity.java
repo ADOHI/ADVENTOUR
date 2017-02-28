@@ -4,6 +4,9 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,8 +15,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
+import com.adostudio.adohi.adventour.db.Achievement;
 import com.adostudio.adohi.adventour.db.User;
 import com.adostudio.adohi.adventour.service.LocationService;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -23,6 +29,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -37,7 +44,18 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import java.net.URL;
 import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -77,6 +95,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         ButterKnife.bind(this);
+
         PermissionListener permissionlistener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -115,8 +134,9 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                           final String uid = user.getUid();
                           final String name = user.getDisplayName();
                           final String photoUrl = user.getPhotoUrl().toString();
-                            Log.d(LOGTAG, name + "  " + user.getDisplayName());
-                          Log.d("currentuser", user.getDisplayName());
+                          MyApplication.setMyUid(uid);
+                          MyApplication.setMyName(name);
+                          MyApplication.setMyPhotoUrl(photoUrl);
                           mDatabase.child("users").child(uid).addValueEventListener(
                                   new ValueEventListener() {
                                       @Override
@@ -130,6 +150,7 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                                              mDatabase.child("users").child(uid).setValue(newUser);
                                           }
                                       }
+
                                       @Override
                                       public void onCancelled(DatabaseError databaseError) {
                                           Log.d(LOGTAG, "database error : " + databaseError);
@@ -165,28 +186,25 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
     public void onStart() {
 
         super.onStart();
+        loginButton.setVisibility(View.INVISIBLE);
+        logoutButton.setVisibility(View.INVISIBLE);
         mAuth.addAuthStateListener(mAuthListener);
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
 
             Log.d(LOGTAG, "Got cached sign-in");
-
             GoogleSignInResult result = opr.get();
-
             handleSignInResult(result);
 
         } else {
 
             showProgressDialog();
-
             opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
 
                 @Override
 
                 public void onResult(GoogleSignInResult googleSignInResult) {
-
                     hideProgressDialog();
-
                     handleSignInResult(googleSignInResult);
 
                 }
@@ -232,7 +250,6 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
-            updateUI(true);
             firebaseAuthWithGoogle(acct);
         } else {
             // Signed out, show unauthenticated UI.
@@ -369,12 +386,10 @@ public class StartActivity extends AppCompatActivity implements GoogleApiClient.
                                   Toast.makeText(StartActivity.this, "Authentication failed.",
                                               Toast.LENGTH_SHORT).show();
                                 }
-
+                          updateUI(true);
                           }
                 });
     }
-
-
 
 }
 

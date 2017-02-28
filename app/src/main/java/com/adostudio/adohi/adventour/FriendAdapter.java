@@ -15,6 +15,8 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
 
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
+
 /**
  * Created by ADOHI on 2017-02-13.
  */
@@ -65,9 +67,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                 MyApplication.setIssueFriendImageUrl(imageUrl);
                 MyApplication.setIssueFriendName(name);
                 MyApplication.setIssueFriendUid(uid);
-                QuestIssueActivity.friendUid = uid;
-                QuestIssueActivity.friendUrl = imageUrl;
-                QuestIssueActivity.friendName = name;
+                Log.d(LOGTAG, MyApplication.getIssueFriendUid());
                 activity.finish();
             } else {
                 Intent intent = new Intent(activity, ProfileActivity.class);
@@ -103,9 +103,11 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         }
         holder.friendMemoTextView.setText(userDataset.get(position).getMemo());
         try{
-            glideRequestManager.load(userDataset.get(position).getPhotoUrl()).into(holder.friendSumnailmageView);
+            glideRequestManager.load(userDataset.get(position).getPhotoUrl())
+                    .bitmapTransform(new CropCircleTransformation(activity))
+                    .into(holder.friendSumnailmageView);
         }catch (Exception ex){
-
+            Log.e(LOGTAG, "friend photo load failed");
         }
         holder.uid = userDataset.get(position).getUid();
         holder.name = userDataset.get(position).getUserName();

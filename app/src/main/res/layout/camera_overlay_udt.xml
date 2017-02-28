@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/camera_overlay_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <TextView
+        android:text=""
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_quest_distance"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:textSize="30dp"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/cast_libraries_material_featurehighlight_text_body_color"/>
 
     <RelativeLayout
         android:id="@+id/loading_layout"
@@ -39,6 +49,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_margin="10dp"
             tools:context="com.adostudio.adohi.adventour.userdefinedtargets.UserDefinedTargets" />
 
         <ImageView
@@ -48,7 +59,8 @@
             android:contentDescription="@string/content_desc_camera_button"
             android:onClick="onCameraClick"
             android:src="@drawable/camera_button_background"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="10dp"/>
 
 
 

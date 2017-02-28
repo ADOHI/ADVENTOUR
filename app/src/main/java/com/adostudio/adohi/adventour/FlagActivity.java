@@ -3,10 +3,10 @@ package com.adostudio.adohi.adventour;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Achievement;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
@@ -36,7 +36,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap flagMap;
     private DatabaseReference appDatabase;
-    private String uid;
+
     @BindView(R.id.iv_flag_flag)ImageView flagImageView;
     @BindView(R.id.tv_flag_count)TextView flagCountTextView;
     @Override
@@ -48,17 +48,16 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        } else {
-            Log.d(LOGTAG, "user unsigned");
-        }
-        appDatabase = FirebaseDatabase.getInstance().getReference();
         Intent intent = getIntent();
 
+        appDatabase = FirebaseDatabase.getInstance().getReference();
+
+
         if(intent.getExtras().getBoolean("trophy_button")) {
-            Glide.with(this).load(R.drawable.trophy).into(flagImageView);
-            appDatabase.child("users").child(uid).addValueEventListener(
+            Glide.with(this).load(R.drawable.trophy)
+                    .thumbnail(0.1f)
+                    .into(flagImageView);
+            appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -87,8 +86,10 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
         } else {
-            Glide.with(this).load(R.drawable.flag_big).into(flagImageView);
-            appDatabase.child("users").child(uid).addValueEventListener(
+            Glide.with(this).load(R.drawable.flag_big)
+                    .thumbnail(0.1f)
+                    .into(flagImageView);
+            appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -108,7 +109,7 @@ public class FlagActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                             LatLng latLng = new LatLng(lat / user.getFlagList().size(), lng / user.getFlagList().size());
                             flagMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-                            flagCountTextView.setText(Integer.toString(user.getAchievementList().size()));
+                            flagCountTextView.setText(Integer.toString(user.getFlagList().size()));
                         }
 
                         @Override

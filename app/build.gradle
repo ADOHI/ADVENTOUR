@@ -38,7 +38,6 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.2.0'
     compile 'gun0912.ted:tedpermission:1.0.3'
     compile 'com.flaviofaria:kenburnsview:1.0.7'
-    compile 'com.github.florent37:diagonallayout:1.0.4'
     compile 'com.romainpiel.shimmer:library:1.4.0@aar'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'

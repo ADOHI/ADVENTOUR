@@ -29,7 +29,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class IssueLocationActivity extends AppCompatActivity {
+public class
+IssueLocationActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "IssueLocationActivity";
     private static final int NEAR_LOCATION_DISTANCE = 100;
@@ -95,7 +96,6 @@ public class IssueLocationActivity extends AppCompatActivity {
                 Element firstElement = (Element) node;
                 NodeList contentTypeId = firstElement.getElementsByTagName("contenttypeid");
                 if(!(contentTypeId.item(0).getChildNodes().item(0).getNodeValue().equals("25"))) {
-                    Log.d("whynot", contentTypeId.item(0).getChildNodes().item(0).getNodeValue());
                     NodeList sumnail = firstElement.getElementsByTagName("firstimage");
                     NodeList mapX = firstElement.getElementsByTagName("mapx");
                     NodeList mapY = firstElement.getElementsByTagName("mapy");
@@ -107,7 +107,6 @@ public class IssueLocationActivity extends AppCompatActivity {
                     String addressString;
                     String contentIdString;
                     String contentTypeIdString;
-
                     try {
                         sumnailString = sumnail.item(0).getChildNodes().item(0).getNodeValue();
                     } catch (Exception ex) {

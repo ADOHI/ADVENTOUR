@@ -5,12 +5,11 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Sticker;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.flaviofaria.kenburnsview.KenBurnsView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,11 +26,11 @@ public class GetStickerActivity extends AppCompatActivity {
     private static final String LOGTAG = "GetStickerActivity";
 
     private DatabaseReference appDatabase;
-    private String uid;
+
     @BindView(R.id.kv_get_sticker_sticker)KenBurnsView getStickerKenBurnView;
     @BindView(R.id.iv_get_sticker_get)CircleImageView getGetCircleImageView;
     @OnClick(R.id.iv_get_sticker_get) void getClick() {
-        appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -40,7 +39,7 @@ public class GetStickerActivity extends AppCompatActivity {
                         Sticker sticker = new Sticker(questAsset, questResId);
                         user.addStickerList(sticker);
                         user.removeQuest(questLng, questLat);
-                        appDatabase.child("users").child(uid).setValue(user);
+                        appDatabase.child("users").child(MyApplication.getMyUid()).setValue(user);
 
                     }
                     @Override
@@ -58,10 +57,7 @@ public class GetStickerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_sticker);
         ButterKnife.bind(this);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        }
+
         appDatabase = FirebaseDatabase.getInstance().getReference();
         Intent intent = getIntent();
         questAsset = intent.getExtras().getString("questasset");

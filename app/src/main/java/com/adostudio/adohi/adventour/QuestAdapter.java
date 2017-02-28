@@ -14,6 +14,8 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
 
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
+
 /**
  * Created by ADOHI on 2017-02-13.
  */
@@ -79,8 +81,12 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.ViewHolder> 
         holder.fromTextView.setText(questDataset.get(position).getFromName());
         holder.hintTextView.setText(questDataset.get(position).getLocationHint());
         holder.locationTextView.setText(questDataset.get(position).getLocationName());
-        glideRequestManager.load(questDataset.get(position).getFromImageUrl()).into(holder.fromSumnailmageView);
-        glideRequestManager.load(questDataset.get(position).getReward().getResId()).into(holder.rewardlmageView);
+        glideRequestManager.load(questDataset.get(position).getFromImageUrl())
+                .bitmapTransform(new CropCircleTransformation(activity))
+                .into(holder.fromSumnailmageView);
+        glideRequestManager.load(questDataset.get(position).getReward().getResId())
+                .bitmapTransform(new CropCircleTransformation(activity))
+                .into(holder.rewardlmageView);
         holder.position = position;
     }
 

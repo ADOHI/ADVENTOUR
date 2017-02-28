@@ -13,7 +13,6 @@ package com.adostudio.adohi.adventour.userdefinedtargets;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,8 +32,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -44,7 +43,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.database.FirebaseDatabase;
 import com.vuforia.CameraDevice;
 import com.vuforia.DataSet;
 import com.vuforia.ImageTargetBuilder;
@@ -62,8 +60,6 @@ import com.adostudio.adohi.adventour.SampleApplication.utils.SampleApplicationGL
 import com.adostudio.adohi.adventour.SampleApplication.utils.Texture;
 import com.adostudio.adohi.adventour.R;
 
-import butterknife.ButterKnife;
-
 
 // The main activity for the UserDefinedTargets sample.
 public class UserDefinedTargets extends FragmentActivity implements
@@ -76,7 +72,7 @@ public class UserDefinedTargets extends FragmentActivity implements
     private double questLat;
     private String questAsset = "tw1.jpg";
     private int questResId;
-    private GoogleMap mMap;
+    private GoogleMap arMap;
     private SupportMapFragment mapFragment;
 
 
@@ -95,7 +91,7 @@ public class UserDefinedTargets extends FragmentActivity implements
     private RelativeLayout mUILayout;
     private View mBottomBar;
     private View mCameraButton;
-    public ImageView testimage;
+    private TextView questDistanceTextView;
     
     // Alert dialog for displaying SDK errors
     private AlertDialog mDialog;
@@ -127,7 +123,6 @@ public class UserDefinedTargets extends FragmentActivity implements
     {
         Log.d(LOGTAG, "onCreate");
         super.onCreate(savedInstanceState);
-        ButterKnife.bind(this);
 
         Intent intent = getIntent();
         questLng = intent.getExtras().getDouble("questlng");
@@ -152,15 +147,15 @@ public class UserDefinedTargets extends FragmentActivity implements
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        arMap = googleMap;
+        arMap.setMyLocationEnabled(true);
+        arMap.getUiSettings().setMyLocationButtonEnabled(false);
         Log.d("aaaaa", questLat + "    " + questLng);
         LatLng latLng = new LatLng(questLat, questLng);
-        Marker marker = mMap.addMarker(new MarkerOptions()
+        Marker marker = arMap.addMarker(new MarkerOptions()
                 .title("보물")
                 .position(latLng));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+        arMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
     }
     // Process Single Tap event to trigger autofocus
     private class GestureListener extends
@@ -402,7 +397,7 @@ public class UserDefinedTargets extends FragmentActivity implements
         
         // Gets a reference to the Camera button
         mCameraButton = mUILayout.findViewById(R.id.camera_button);
-
+        questDistanceTextView = (TextView)mUILayout.findViewById(R.id.tv_quest_distance);
         // Gets a reference to the loading dialog container
         loadingDialogHandler.mLoadingDialogContainer = mUILayout
             .findViewById(R.id.loading_layout);
@@ -435,9 +430,13 @@ public class UserDefinedTargets extends FragmentActivity implements
 
                 // Builds the new target
                 startBuild();
+                questDistanceTextView.setText("큐브를 끌어당겨 획득하세요");
 
             }
          }
+        else {
+            questDistanceTextView.setText(distance + "m");
+        }
 
     }
 

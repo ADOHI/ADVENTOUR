@@ -4,26 +4,31 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Conquest;
 import com.adostudio.adohi.adventour.db.Sticker;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.flaviofaria.kenburnsview.KenBurnsView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.romainpiel.shimmer.Shimmer;
+import com.romainpiel.shimmer.ShimmerTextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import de.hdodenhof.circleimageview.CircleImageView;
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import tyrantgit.explosionfield.ExplosionField;
 
 public class GetAchivementActivity extends AppCompatActivity {
@@ -32,43 +37,43 @@ public class GetAchivementActivity extends AppCompatActivity {
 
     private RequestManager glideRequestManager;
     private DatabaseReference appDatabase;
-    private String uid;
+
     private String exUid = "";
     private String contentId;
-    private String name;
-    private String imageUrl;
-    private ExplosionField explosionField;
+
     private boolean getBoolean = false;
     private int index;
     private int resid;
+    @BindView(R.id.stv_get)TextView getShimmerTextView;
     @BindView(R.id.iv_get_flag)ImageView getFlagImageView;
     @BindView(R.id.tv_get_flag)TextView getFlagTextView;
     @BindView(R.id.iv_get_chest)ImageView getChestImageView;
     @OnClick(R.id.iv_get_chest)void chestClick(){
         index = (int) (Math.random() * 9);
         resid = index + R.drawable.tw1;
-        glideRequestManager.load(resid).into(getChestImageView);
         getBoolean = true;
-        glideRequestManager.load(R.drawable.get).into(getKickImageView);
+        getStickerCircleImageView.setVisibility(View.VISIBLE);
+        stickerCircleImageView.setVisibility(View.VISIBLE);
+        getChestImageView.setVisibility(View.GONE);
     }
+    @BindView(R.id.iv_sticker)CircleImageView stickerCircleImageView;
     @BindView(R.id.tv_get_title)TextView getTitleTextView;
     @BindView(R.id.iv_get_photo)ImageView getPhotoImageView;
     @BindView((R.id.tv_get_name))TextView getNameTextView;
     @BindView(R.id.iv_get_kick)ImageView getKickImageView;
     @OnClick(R.id.iv_get_kick)void kickClick(){
-        if(!getBoolean) {
             appDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            Conquest conquest = new Conquest(contentId, uid, name, imageUrl);
+                            Conquest conquest = new Conquest(contentId, MyApplication.getMyUid(), MyApplication.getMyName(), MyApplication.getMyPhotoUrl());
                             appDatabase.child("conquests").child(contentId).setValue(conquest);
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
                         }
                     });
-            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+            appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -77,7 +82,7 @@ public class GetAchivementActivity extends AppCompatActivity {
                                 if (user.getFlagList().get(0) != user.getAchievementList().get(0))
                                     user.addFlagList(user.getAchievementList().get(0));
                             } else user.addFlagList(user.getAchievementList().get(0));
-                            appDatabase.child("users").child(uid).setValue(user);
+                            appDatabase.child("users").child(MyApplication.getMyUid()).setValue(user);
                         }
 
                         @Override
@@ -99,21 +104,27 @@ public class GetAchivementActivity extends AppCompatActivity {
                             }
                         });
             }
+        Animation kickAnimation = AnimationUtils.loadAnimation(this, R.anim.kick_image);
+        kickAnimation.setFillAfter(true);
+        getPhotoImageView.startAnimation(kickAnimation);
 
-            explosionField.explode(getPhotoImageView);
-            explosionField.explode(getNameTextView);
-            getFlagImageView.setVisibility(View.VISIBLE);
-            getFlagTextView.setVisibility(View.VISIBLE);
-            getChestImageView.setVisibility(View.VISIBLE);
-        } else {
-            appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        getNameTextView.setVisibility(View.GONE);
+        getKickImageView.setVisibility(View.GONE);
+        getFlagImageView.setVisibility(View.VISIBLE);
+        getFlagTextView.setVisibility(View.VISIBLE);
+        getChestImageView.setVisibility(View.VISIBLE);
+    }
+
+    @BindView(R.id.iv_get_sticker)CircleImageView getStickerCircleImageView;
+    @OnClick(R.id.iv_get_sticker)void getStickerClick(){
+            appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                     new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
                             Sticker sticker = new Sticker("tw"+(index+1)+".jpg", resid);
                             user.addStickerList(sticker);
-                            appDatabase.child("users").child(uid).setValue(user);
+                            appDatabase.child("users").child(MyApplication.getMyUid()).setValue(user);
                         }
 
                         @Override
@@ -121,15 +132,14 @@ public class GetAchivementActivity extends AppCompatActivity {
                         }
                     });
             finish();
-        }
-
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_achivement);
         ButterKnife.bind(this);
-        explosionField = new ExplosionField(this);
+        getChestImageView.setOnTouchListener(MyApplication.getTouchImage());
+        getKickImageView.setOnTouchListener(MyApplication.getTouchImage());
         Intent intent = getIntent();
         contentId = intent.getExtras().getString("contentid");
         KenBurnsView kbv = (KenBurnsView) findViewById(R.id.kv_get);
@@ -138,16 +148,6 @@ public class GetAchivementActivity extends AppCompatActivity {
             glideRequestManager.load(intent.getExtras().getString("imageurl")).into(kbv);
         } catch (Exception ex){}
         getTitleTextView.setText(intent.getExtras().getString("title"));
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            name = user.getDisplayName();
-            imageUrl = user.getPhotoUrl().toString();
-            uid = user.getUid();
-        } else {
-            // No user is signed in
-        }
-
         appDatabase = FirebaseDatabase.getInstance().getReference();
         appDatabase.child("conquests").child(contentId).addListenerForSingleValueEvent(
                 new ValueEventListener() {
@@ -155,10 +155,12 @@ public class GetAchivementActivity extends AppCompatActivity {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                        if(dataSnapshot.exists()){
                            Conquest conquest = dataSnapshot.getValue(Conquest.class);
-                           glideRequestManager.load(conquest.getImageUrl()).into(getPhotoImageView);
+                           glideRequestManager.load(conquest.getImageUrl())
+                                   .bitmapTransform(new CropCircleTransformation(getApplicationContext()))
+                                   .into(getPhotoImageView);
                            getNameTextView.setText(conquest.getName());
-                           exUid = uid;
-                           if(conquest.getUid() == uid){
+                           exUid = conquest.getUid();
+                           if(conquest.getUid() == MyApplication.getMyUid()){
                                getKickImageView.setVisibility(View.INVISIBLE);
                            }
                        }
@@ -167,6 +169,5 @@ public class GetAchivementActivity extends AppCompatActivity {
                     public void onCancelled(DatabaseError databaseError) {
                     }
                 });
-
     }
 }

@@ -62,9 +62,11 @@
         <activity android:name=".QuestActivity" />
         <activity android:name=".FriendActivity" />
         <activity android:name=".MemoModifyActivity" />
-        <activity android:name=".CaptureTestActivity" />
         <activity android:name=".ReviewActivity" />
-        <activity android:name=".QuestIssueActivity" />
+        <activity
+            android:name=".QuestIssueActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            />
         <activity android:name=".IssueLocationActivity" />
         <activity android:name=".QuestListActivity" />
         <activity

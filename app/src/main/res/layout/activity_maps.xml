@@ -15,7 +15,7 @@
         android:theme="?attr/actionBarTheme"
         android:minHeight="?attr/actionBarSize"
         android:id="@+id/toolbar3"
-        app:title="ADVENTOUR"
+        app:title="업적"
         />
 
     <android.support.design.widget.TabLayout

@@ -36,7 +36,6 @@ public class LocationService extends Service{
     private static final int ACHIEVEMENT_GET_DISTANCE = 3000;
     private static NMapLocationManager mapLocationManager;
     private DatabaseReference appDatabase;
-    private String uid;
 
     private final NMapLocationManager.OnLocationChangeListener onMyLocationChangeListener = new NMapLocationManager.OnLocationChangeListener() {
 
@@ -44,16 +43,9 @@ public class LocationService extends Service{
         public boolean onLocationChanged(NMapLocationManager locationManager, final NGeoPoint myLocation) {
             try {
 
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    uid = user.getUid();
-                } else {
-                    Log.d(LOGTAG, "user unsigned");
-                }
-
                 MyApplication.setCurrentLng(myLocation.getLongitude());
                 MyApplication.setCurrentLat(myLocation.getLatitude());
-                appDatabase.child("users").child(uid).runTransaction(new Transaction.Handler() {
+                appDatabase.child("users").child(MyApplication.getMyUid()).runTransaction(new Transaction.Handler() {
                     @Override
                     public Transaction.Result doTransaction(MutableData mutableData) {
 
@@ -99,7 +91,7 @@ public class LocationService extends Service{
                             int distance = (int) currentLocation.distanceTo(achievementLocation);
                             a.setDistance(distance);
                         }
-                        appDatabase.child("users").child(uid).setValue(user);
+                        appDatabase.child("users").child(MyApplication.getMyUid()).setValue(user);
                         return Transaction.success(mutableData);
 
                     }

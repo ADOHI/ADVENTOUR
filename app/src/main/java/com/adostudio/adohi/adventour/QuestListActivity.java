@@ -1,5 +1,6 @@
 package com.adostudio.adohi.adventour;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,8 +11,6 @@ import com.adostudio.adohi.adventour.db.Quest;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,7 +27,6 @@ public class QuestListActivity extends AppCompatActivity {
     private static final String LOGTAG = "QuestListActivity";
 
     private DatabaseReference appDatabase;
-    private String uid;
     private ArrayList<Quest> questArrayList;
     private RecyclerView.Adapter questAdapter;
     private RecyclerView.LayoutManager questLayoutManager;
@@ -50,11 +48,16 @@ public class QuestListActivity extends AppCompatActivity {
         questRecyclerView.setAdapter(questAdapter);
         questRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
         appDatabase = FirebaseDatabase.getInstance().getReference();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        }
-        appDatabase.child("users").child(uid).addValueEventListener(
+
+
+        ActionBar ab = getSupportActionBar();
+        ab.setTitle("퀘스트 목록");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {

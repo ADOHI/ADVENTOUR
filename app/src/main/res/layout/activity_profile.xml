@@ -19,7 +19,8 @@
         android:id="@+id/fab_profile_add"
         android:layout_gravity="top|end"
         android:visibility="gone"
-        app:backgroundTint="@android:color/white"/>
+        app:backgroundTint="@android:color/white"
+        android:layout_margin="20dp"/>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="match_parent"
@@ -51,21 +52,20 @@
                     android:layout_height="200dp"
                     android:scaleType="centerCrop"
                     android:id="@+id/iv_profile_last"
-                    android:src="@mipmap/bg_niju" />
+                    />
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     app:civ_border_width="2dp"
                     app:civ_border_color="#FF000000"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:src="@drawable/resume_main"
+                    android:src="@drawable/resume_small"
                     android:id="@+id/iv_profile_picture"
                     android:layout_gravity="bottom|center"
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="40dp"/>
 
                 <TextView
-                    android:text="name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tv_profile_name"
@@ -95,15 +95,29 @@
                     android:layout_gravity="bottom|start"
                     android:layout_weight="1" />
 
-                <TextView
-                    android:text="0점"
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tv_profile_score"
-                    android:layout_weight="1"
-                    android:textSize="20dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/tv_profile_trophy_score"
+                        android:layout_weight="2"
+                        android:textSize="20dp"
+                        android:layout_gravity="center"
+                        android:gravity="center"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/tv_profile_trophy_ranking"
+                        android:layout_weight="1"
+                        android:layout_gravity="center"
+                        android:gravity="center"/>
+                </LinearLayout>
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     app:civ_border_width="2dp"
@@ -115,15 +129,30 @@
                     android:src="@drawable/flag_big"
                     />
 
-                <TextView
-                    android:text="0개"
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tv_profile_flag"
-                    android:layout_weight="1"
-                    android:textSize="20dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/tv_profile_flag_score"
+                        android:layout_weight="2"
+                        android:textSize="20dp"
+                        android:layout_gravity="center"
+                        android:gravity="center"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/tv_profile_flag_ranking"
+                        android:layout_weight="1"
+                        android:layout_gravity="center"
+                        android:gravity="center"/>
+                </LinearLayout>
+
             </LinearLayout>
 
             <View

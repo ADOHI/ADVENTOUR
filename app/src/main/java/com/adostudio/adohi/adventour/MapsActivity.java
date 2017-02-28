@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.adostudio.adohi.adventour.db.User;
@@ -51,8 +52,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -127,7 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @BindView(R.id.rv_bookmark_achievement)RecyclerView bookmarkRecyclerView;
     @BindView(R.id.rv_trophy_achievement)RecyclerView trophyRecyclerView;
 
-    private Document doc = null;
+    private Document parsingDocument = null;
 
 
     private RecyclerView.Adapter achievementAdapter;
@@ -140,7 +139,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private DatabaseReference appDatabase;
-    private String uid;
 
     private TabLayout achievementTabLayout;
 
@@ -188,36 +186,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         createLocationRequest();
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-
-            uid = user.getUid();
-
-        } else {
-            Log.d(LOGTAG, "user unsigned");
-        }
 
         appDatabase = FirebaseDatabase.getInstance().getReference();
-        appDatabase.child("users").child(uid).addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        User user = dataSnapshot.getValue(User.class);
-                        markerBookmarkList.clear();
-                        trophyList.clear();
-                        markerBookmarkList.addAll(user.getBookmarkList());
-                        trophyList.addAll(user.getAchievementList());
-                        addMarker();
-                        bookmarkAdapter.notifyDataSetChanged();
-                        trophyAdapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.d(LOGTAG, "database error = " + databaseError);
-                    }
-                });
 
         markerAchievementList = new ArrayList<>();
         markerBookmarkList = new ArrayList<>();
@@ -312,6 +283,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
+
+        appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        User user = dataSnapshot.getValue(User.class);
+                        markerBookmarkList.clear();
+                        trophyList.clear();
+                        markerBookmarkList.addAll(user.getBookmarkList());
+                        trophyList.addAll(user.getAchievementList());
+                        addMarker();
+                        bookmarkAdapter.notifyDataSetChanged();
+                        trophyAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d(LOGTAG, "database error = " + databaseError);
+                    }
+                });
     }
 
     /**
@@ -497,13 +489,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 url = new URL(urls[0]);
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder(); //XML문서 빌더 객체를 생성
-                doc = db.parse(new InputSource(url.openStream())); //XML문서를 파싱한다.
-                doc.getDocumentElement().normalize();
+                parsingDocument = db.parse(new InputSource(url.openStream())); //XML문서를 파싱한다.
+                parsingDocument.getDocumentElement().normalize();
 
             } catch (Exception e) {
                 Toast.makeText(getBaseContext(), "Parsing Error", Toast.LENGTH_SHORT).show();
             }
-            return doc;
+            return parsingDocument;
         }
 
         @Override
@@ -610,5 +602,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             markerHashMap.put(marker, i++);
         }
     }
+
+
 }
 

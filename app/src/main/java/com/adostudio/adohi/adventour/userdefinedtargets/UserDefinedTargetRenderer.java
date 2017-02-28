@@ -9,20 +9,15 @@ countries.
 
 package com.adostudio.adohi.adventour.userdefinedtargets;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.IntBuffer;
 import java.util.Vector;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.Environment;
 import android.util.Log;
 
 import com.adostudio.adohi.adventour.GetStickerActivity;
@@ -40,7 +35,6 @@ import com.adostudio.adohi.adventour.SampleApplication.SampleApplicationSession;
 import com.adostudio.adohi.adventour.SampleApplication.utils.CubeShaders;
 import com.adostudio.adohi.adventour.SampleApplication.utils.SampleUtils;
 import com.adostudio.adohi.adventour.SampleApplication.utils.Texture;
-import com.vuforia.ar.pl.DebugLog;
 
 
 // The renderer class for the ImageTargetsBuilder sample. 

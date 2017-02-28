@@ -201,7 +201,7 @@
         android:scaleType="center"
         android:id="@+id/fb_main_menu"
         android:layout_gravity="top|end"
-        app:backgroundTint="@android:color/white"
+        app:backgroundTint="#00000000"
         app:rippleColor="@color/colorPrimary"
         android:layout_margin="20dp"/>
 

@@ -1,14 +1,12 @@
 package com.adostudio.adohi.adventour;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -18,13 +16,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.User;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -62,18 +56,17 @@ public class MainActivity extends AppCompatActivity {
     private boolean blurBoolean = false;
     private int width;
     private DatabaseReference appDatabase;
-    private String uid;
+
     @BindView(R.id.iv_main_resume)ImageView mainResumeImageView;
     @BindView(R.id.tv_main_profile_big)TextView mainProfileBigTextView;
     @BindView(R.id.tv_main_profile_small)TextView mainProfileSmallTextView;
-    @OnClick(R.id.iv_main_resume)void mainResumeClick(){
+    @OnClick(R.id.iv_main_resume)void mainResumeClick(View v){
         if(select != 1) {
             select = 1;
             selectMenu(select);
         }
         else {
             Intent intent = new Intent(this, ProfileActivity.class);
-            intent.putExtra("uid", uid);
             intent.putExtra("mine", true);
             intent.putExtra("add", 0);
             startActivity(intent);
@@ -104,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             Intent intent = new Intent(this, QuestActivity.class);
-            intent.putExtra("uid", uid);
             startActivity(intent);
         }
     }
@@ -127,19 +119,18 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.fb_main_menu)FloatingActionButton mainMenuFloatingActionButton;
     @OnClick(R.id.fb_main_menu)void mainMenuClick(){
 
-        appDatabase.child("users").child(uid).addListenerForSingleValueEvent(
+        appDatabase.child("users").child(MyApplication.getMyUid()
+        ).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
                         User user = dataSnapshot.getValue(User.class);
                         setBackground(user);
-
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        Log.d(LOGTAG, "database error = " + databaseError);
                     }
                 });
         blurBoolean = !blurBoolean;
@@ -205,28 +196,7 @@ public class MainActivity extends AppCompatActivity {
         thirdLayout.setLayoutParams(layoutParams);
         fourthLayout.setLayoutParams(layoutParams);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        } else {
-            Log.d(LOGTAG, "user unsigned");
-        }
         appDatabase = FirebaseDatabase.getInstance().getReference();
-
-        appDatabase.child("users").child(uid).addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        User user = dataSnapshot.getValue(User.class);
-                        setBackground(user);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.d(LOGTAG, "database error" + databaseError);
-                    }
-                });
 
     }
 
@@ -253,18 +223,31 @@ public class MainActivity extends AppCompatActivity {
             });
 
         }
+
+
     }
 
     public void showMenu (boolean show){
         Animation ani01 = new AlphaAnimation(0.0f, 1.0f);
         ani01.setDuration(3000);
         mainResumeImageView.setAnimation(ani01);
+        mainProfileBigTextView.setAnimation(ani01);
+        mainProfileSmallTextView.setAnimation(ani01);
+        mainTrophyBigTextView.setAnimation(ani01);
+        mainTrophyBigTextView.setAnimation(ani01);
+        mainTrophySmallTextView.setAnimation(ani01);
+        mainQuestImageView.setAnimation(ani01);
+        mainQuestBigTextView.setAnimation(ani01);
+        mainQuestSmallTextView.setAnimation(ani01);
+        mainFriendImageView.setAnimation(ani01);
+        mainFriendBigTextView.setAnimation(ani01);
+        mainTrophySmallTextView.setAnimation(ani01);
         if(show) {
             firstLayout.setVisibility(View.VISIBLE);
-            ani01.start();
             secondLayout.setVisibility(View.VISIBLE);
             thirdLayout.setVisibility(View.VISIBLE);
             fourthLayout.setVisibility(View.VISIBLE);
+            ani01.start();
         } else {
             firstLayout.setVisibility(View.GONE);
             secondLayout.setVisibility(View.GONE);
@@ -315,8 +298,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();
-        appDatabase.child("users").child(uid).addValueEventListener(
+        appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -329,8 +311,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(LOGTAG, "database error" + databaseError);
                     }
                 });
-        blurBoolean = false;
-        showMenu(blurBoolean);
+        super.onResume();
     }
 
     private void setBackground(User user) {

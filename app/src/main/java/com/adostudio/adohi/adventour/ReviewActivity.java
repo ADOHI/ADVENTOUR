@@ -1,7 +1,7 @@
 package com.adostudio.adohi.adventour;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,11 +9,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.Review;
 import com.adostudio.adohi.adventour.db.ReviewAchievement;
-import com.adostudio.adohi.adventour.db.User;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,10 +31,7 @@ public class ReviewActivity extends AppCompatActivity {
 
     private static final int DEFAULT_SCORE = 3;
     private int score = DEFAULT_SCORE;
-    private String uid;
-    private String name;
-    private String photoUrl;
-    private DatabaseReference mDatabase;
+    private DatabaseReference appDatabase;
     private String contentId;
     @BindView(R.id.iv_review_star1)ImageView starIV1;
     @BindView(R.id.iv_review_star2)ImageView starIV2;
@@ -98,7 +93,7 @@ public class ReviewActivity extends AppCompatActivity {
     @OnClick(R.id.bt_save_review)void saveButtonClick(){
 
 
-        mDatabase.child("reviews").child(contentId).addListenerForSingleValueEvent(
+        appDatabase.child("reviews").child(contentId).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -106,7 +101,7 @@ public class ReviewActivity extends AppCompatActivity {
 
                         SimpleDateFormat dateFormat = new  SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
                         String strDate = dateFormat.format(date);
-                        Review review = new Review(uid, name, photoUrl, reviewEditText.getText().toString(), strDate, score);
+                        Review review = new Review(MyApplication.getMyUid(), MyApplication.getMyName(), MyApplication.getMyPhotoUrl(), reviewEditText.getText().toString(), strDate, score);
                         if(dataSnapshot.exists()) {
                             ReviewAchievement reviewAchievement = dataSnapshot.getValue(ReviewAchievement.class);
                             reviewAchievement.addReviews(review);
@@ -116,13 +111,13 @@ public class ReviewActivity extends AppCompatActivity {
                             } catch (Exception ex) {
                                 reviewAchievement.setStars(score);
                             }
-                            mDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
+                            appDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
                         } else {
                             ReviewAchievement reviewAchievement = new ReviewAchievement();
                             reviewAchievement.setStars(score);
                             reviewAchievement.addReviews(review);
                             reviewAchievement.setContentId(contentId);
-                            mDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
+                            appDatabase.child("reviews").child(contentId).setValue(reviewAchievement);
                         }
                     }
                     @Override
@@ -138,14 +133,11 @@ public class ReviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review);
         ButterKnife.bind(this);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            name = user.getDisplayName();
-            photoUrl = user.getPhotoUrl().toString();
-            uid = user.getUid();
-        }
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        appDatabase = FirebaseDatabase.getInstance().getReference();
         Intent intent = getIntent();
         contentId = intent.getExtras().getString("contentid");
+
+        ActionBar ab = getSupportActionBar();
+        ab.setTitle("리뷰 남기기");
     }
 }

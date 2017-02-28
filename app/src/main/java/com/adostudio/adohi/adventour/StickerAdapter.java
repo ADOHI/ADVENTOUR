@@ -118,6 +118,7 @@ public class StickerAdapter extends RecyclerView.Adapter<StickerAdapter.ViewHold
 
         try{
             glideRequestManager.load(stickerDataset.get(position * 3).getResId())
+                    .bitmapTransform(new CropCircleTransformation(activity))
                     .into(holder.firstStickerImageView);
         }catch (Exception ex){
             Log.e(LOGTAG, "sticker load failed");

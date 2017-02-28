@@ -7,11 +7,21 @@
     android:layout_height="match_parent"
     tools:context="com.adostudio.adohi.adventour.GetStickerActivity">
 
+
+
     <com.flaviofaria.kenburnsview.KenBurnsView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:srcCompat="@drawable/tw4"
         android:id="@+id/kv_get_sticker_sticker" />
+
+    <TextView
+        android:text="GET!!"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:textSize="100sp"
+        android:textColor="#AFFFFFFF"
+        android:layout_marginTop="40dp"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/iv_get_sticker_get"

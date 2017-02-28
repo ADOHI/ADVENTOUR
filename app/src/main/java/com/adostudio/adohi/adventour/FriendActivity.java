@@ -2,20 +2,19 @@ package com.adostudio.adohi.adventour;
 
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.adostudio.adohi.adventour.appInit.MyApplication;
 import com.adostudio.adohi.adventour.db.User;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,7 +32,7 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
     private static final String LOGTAG = "FriendActivity";
 
     private DatabaseReference appDatabase;
-    private String uid;
+
     private int userTrophy;
     private int userFlag;
     private int trophyRanking;
@@ -63,73 +62,9 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
         ButterKnife.bind(this);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            uid = user.getUid();
-        }
+
         appDatabase = FirebaseDatabase.getInstance().getReference();
-        appDatabase.child("users").child(uid).addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        friendList.clear();
-                        User user = dataSnapshot.getValue(User.class);
-                        friendList.addAll(user.getFriendList());
-                        userTrophy = user.getAchievementList().size();
-                        userFlag = user.getFlagList().size();
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-        appDatabase.child("users").addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        userArrayList.clear();
-                        friendArrayList.clear();
-                        trophyRanking = 1;
-                        flagRanking = 1;
-                        trophySame = 1;
-                        flagSame = 1;
-                        Iterator<DataSnapshot> iter = dataSnapshot.getChildren().iterator();
-                        while(iter.hasNext()){
-                            User user =  iter.next().getValue(User.class);
-                            if(!user.getUid().equals(uid)) {
-                                if (friendList.contains(user.getUid())) {
-                                    friendArrayList.add(user);
-                                    if(userTrophy < user.getAchievementList().size()) {
-                                        trophyRanking += trophySame;
-                                        trophySame = 1;
-                                    } else if (userTrophy == user.getAchievementList().size()) {
-                                        trophySame += 1;
-                                    }
-
-                                    if(userFlag < user.getFlagList().size()) {
-                                        flagRanking += flagSame;
-                                        flagSame = 1;
-                                    } else if (userTrophy == user.getAchievementList().size()) {
-                                        flagSame += 1;
-                                    }
-                                }
-                                else userArrayList.add(user);
-                            }
-                        }
-                        userAdapter.notifyDataSetChanged();
-                        friendAdapter.notifyDataSetChanged();
-                        trophyRankingTextView.setText(trophyRanking+"등");
-                        flagRankingTextView.setText(flagRanking+"등");
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
         friendList = new ArrayList<>();
         friendArrayList = new ArrayList<>();
         userArrayList = new ArrayList<>();
@@ -158,8 +93,10 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
             userRecyclerView.setVisibility(View.GONE);
             friendLinearLayout.setVisibility(View.VISIBLE);
             friendTabLayout.setVisibility(View.GONE);
-            Log.d("issue", issueCheck + "");
         }
+
+        ActionBar ab = getSupportActionBar();
+        ab.setTitle("친구");
 
     }
 
@@ -187,5 +124,72 @@ public class FriendActivity extends AppCompatActivity implements TabLayout.OnTab
 
     public boolean getIssueCheck(){
         return issueCheck;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        appDatabase.child("users").child(MyApplication.getMyUid()).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        friendList.clear();
+                        User user = dataSnapshot.getValue(User.class);
+                        friendList.addAll(user.getFriendList());
+                        userTrophy = user.getAchievementList().size();
+                        userFlag = user.getFlagList().size();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+        appDatabase.child("users").addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        userArrayList.clear();
+                        friendArrayList.clear();
+                        trophyRanking = 1;
+                        flagRanking = 1;
+                        trophySame = 1;
+                        flagSame = 1;
+                        Iterator<DataSnapshot> iter = dataSnapshot.getChildren().iterator();
+                        while(iter.hasNext()){
+                            User user =  iter.next().getValue(User.class);
+                            if(!user.getUid().equals(MyApplication.getMyUid())) {
+                                if (friendList.contains(user.getUid())) {
+                                    friendArrayList.add(user);
+                                    if(userTrophy < user.getAchievementList().size()) {
+                                        trophyRanking += trophySame;
+                                        trophySame = 1;
+                                    } else if (userTrophy == user.getAchievementList().size()) {
+                                        trophySame += 1;
+                                    }
+
+                                    if(userFlag < user.getFlagList().size()) {
+                                        flagRanking += flagSame;
+                                        flagSame = 1;
+                                    } else if (userFlag == user.getAchievementList().size()) {
+                                        flagSame += 1;
+                                    }
+                                }
+                                else userArrayList.add(user);
+                            }
+                        }
+                        userAdapter.notifyDataSetChanged();
+                        friendAdapter.notifyDataSetChanged();
+                        trophyRankingTextView.setText(trophyRanking+"등");
+                        flagRankingTextView.setText(flagRanking+"등");
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 }

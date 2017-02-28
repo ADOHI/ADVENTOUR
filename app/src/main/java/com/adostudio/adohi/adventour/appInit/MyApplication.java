@@ -7,13 +7,16 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.util.Log;
 
-import com.google.firebase.database.DatabaseReference;
+
+import com.adostudio.adohi.adventour.TouchImage;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.lang.reflect.Field;
 
 public class MyApplication extends Application {
-
+    private static String myUid;
+    private static String myName;
+    private static String myPhotoUrl;
     private static String issueFriendImageUrl;
     private static String issueFriendName;
     private static String issueFriendUid;
@@ -21,7 +24,7 @@ public class MyApplication extends Application {
     private static double currentLng;
     private static double currentLat;
     private static int stickerPosition;
-
+    private static TouchImage touchImage;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -29,6 +32,7 @@ public class MyApplication extends Application {
         setDefaultFont(this, "DEFAULT", "font_second.ttf");
         setDefaultFont(this, "SANS_SERIF", "font_second.ttf");
         setDefaultFont(this, "SERIF", "font_second.ttf");
+        touchImage = new TouchImage();
 
     }
 
@@ -58,6 +62,30 @@ public class MyApplication extends Application {
             } catch (IllegalAccessException e) {
                 Log.d("aa", "aa");
             }
+    }
+
+    public static String getMyUid() {
+        return myUid;
+    }
+
+    public static void setMyUid(String myUid) {
+        MyApplication.myUid = myUid;
+    }
+
+    public static String getMyName() {
+        return myName;
+    }
+
+    public static void setMyName(String myName) {
+        MyApplication.myName = myName;
+    }
+
+    public static String getMyPhotoUrl() {
+        return myPhotoUrl;
+    }
+
+    public static void setMyPhotoUrl(String myPhotoUrl) {
+        MyApplication.myPhotoUrl = myPhotoUrl;
     }
 
     public static String getIssueFriendUid() {
@@ -115,4 +143,9 @@ public class MyApplication extends Application {
     public static void setIssueLocationName(String issueLocationName) {
         MyApplication.issueLocationName = issueLocationName;
     }
+
+    public static TouchImage getTouchImage() {
+        return touchImage;
+    }
+
 }

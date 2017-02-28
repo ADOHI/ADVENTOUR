@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.flaviofaria.kenburnsview.KenBurnsView;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
@@ -39,9 +38,10 @@ public class ParallaxFragment extends Fragment {
         text.setText(getArguments().getString("name"));
         date.setText(getArguments().getString("date"));
         try {
+            Log.d(LOGTAG, getArguments().getString("imageurl"));
             if (!getArguments().getBoolean("blur")) {
+
                 glideRequestManager.load(getArguments().getString("imageurl"))
-                        .diskCacheStrategy( DiskCacheStrategy.NONE )
                         .thumbnail(GLIDE_SUMNAIL)
                         .into(backgroundKenBurnView);
                 text.setTextColor(BACKGROUND_COLOR_LIGHT);
@@ -51,14 +51,30 @@ public class ParallaxFragment extends Fragment {
             else {
                     glideRequestManager.load(getArguments().getString("imageurl"))
                             .bitmapTransform(new BlurTransformation(getContext(), GLIDE_BLUR), new GrayscaleTransformation(getContext()))
-                            .diskCacheStrategy( DiskCacheStrategy.NONE )
                             .thumbnail(GLIDE_SUMNAIL)
                             .into(backgroundKenBurnView);
                     text.setTextColor(BACKGROUND_COLOR_DARK);
                     date.setTextColor(BACKGROUND_COLOR_DARK);
                 }
         } catch (Exception ex){
-            Log.d("Exception", "glide");
+            Log.e(LOGTAG, "image loading error");
+            if (!getArguments().getBoolean("blur")) {
+
+                glideRequestManager.load(R.drawable.no_image)
+                        .thumbnail(GLIDE_SUMNAIL)
+                        .into(backgroundKenBurnView);
+                text.setTextColor(BACKGROUND_COLOR_LIGHT);
+                date.setTextColor(BACKGROUND_COLOR_LIGHT);
+            }
+
+            else {
+                glideRequestManager.load(R.drawable.no_image)
+                        .bitmapTransform(new BlurTransformation(getContext(), GLIDE_BLUR), new GrayscaleTransformation(getContext()))
+                        .thumbnail(GLIDE_SUMNAIL)
+                        .into(backgroundKenBurnView);
+                text.setTextColor(BACKGROUND_COLOR_DARK);
+                date.setTextColor(BACKGROUND_COLOR_DARK);
+            }
         }
 
 
@@ -67,8 +83,5 @@ public class ParallaxFragment extends Fragment {
 
     public void setAdapter(ParallaxAdapter catsAdapter) {
         backgroundAdapter = catsAdapter;
-    }
-    public static void imageBlur(boolean a){
-
     }
 }

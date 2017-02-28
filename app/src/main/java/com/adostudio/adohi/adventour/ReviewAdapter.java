@@ -1,6 +1,6 @@
 package com.adostudio.adohi.adventour;
 
-import android.content.Intent;
+
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.adostudio.adohi.adventour.db.Achievement;
 import com.adostudio.adohi.adventour.db.Review;
 import com.bumptech.glide.RequestManager;
 
@@ -45,7 +44,6 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         public ImageView starImageView5;
 
 
-
         public ViewHolder(View v) {
             super(v);
             reviewNameTextView = (TextView) v.findViewById(R.id.tv_review_name);
@@ -79,8 +77,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         holder.reviewTimeTextView.setText(reviewDataset.get(position).getTime());
         holder.reviewTextView.setText(reviewDataset.get(position).getReview());
         try{
-            requestManager.load(reviewDataset.get(position).getImageUrl()).into(holder.reviewSumnailImageView);
-            //holder.mainRowImageView.set
+            requestManager.load(reviewDataset.get(position).getImageUrl())
+                    .into(holder.reviewSumnailImageView);
         }catch (Exception ex){
         }
         if(reviewDataset.get(position).getStar() > 1) holder.starImageView2.setImageResource(R.drawable.star_fill);
@@ -90,7 +88,6 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
 
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return reviewDataset.size();
